@@ -1,0 +1,21 @@
+# .bazelrc - Bazel build and run configuration
+
+# Enable platform-specific config blocks (build:windows, build:linux, etc.)
+common --enable_platform_specific_config
+
+# Windows-specific settings
+# Pass through essential Windows environment variables to build actions.
+# Without these, toolchains and subprocesses may fail to locate system resources.
+build:windows --action_env=SYSTEMROOT
+build:windows --action_env=TEMP
+build:windows --action_env=TMP
+
+# Symlink-based runfiles require Windows Developer Mode.
+# We disable them by default to ensure portability; Bazel will use a 
+# manifest file instead.
+build:windows --enable_runfiles=no
+build:windows --nolegacy_external_runfiles
+
+# Force rules_python to use the 'script' bootstrap instead of the new 'venv' 
+# bootstrap on Windows, as the latter requires symlink privileges (WinError 1314).
+build:windows --@rules_python//python/config_settings:bootstrap_impl=script
