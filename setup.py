@@ -187,14 +187,14 @@ def setup_pwsh_profile(local_bin):
     # downloaded scripts must be signed. This is required for $PROFILE to load.
     try:
         result = subprocess.run(
-            ['powershell', '-Command', 'Get-ExecutionPolicy -Scope CurrentUser'],
+            ['powershell', '-NoProfile', '-Command', 'Get-ExecutionPolicy -Scope CurrentUser'],
             capture_output=True, text=True, check=True
         )
         policy = result.stdout.strip()
         if policy in ('Undefined', 'Restricted'):
             print("Setting PowerShell execution policy to RemoteSigned for current user... ", end="", flush=True)
             subprocess.run(
-                ['powershell', '-Command', 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force'],
+                ['powershell', '-NoProfile', '-Command', 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force'],
                 check=True, capture_output=True
             )
             print("Done.")
@@ -205,7 +205,7 @@ def setup_pwsh_profile(local_bin):
 
     try:
         result = subprocess.run(
-            ['powershell', '-Command', 'echo $PROFILE'],
+            ['powershell', '-NoProfile', '-Command', 'echo $PROFILE'],
             capture_output=True, text=True, check=True
         )
         profile_path = result.stdout.strip()
@@ -270,7 +270,7 @@ def ensure_windows_path(*paths):
         }}
         """
         try:
-            result = subprocess.run(['powershell', '-Command', cmd], check=True, capture_output=True, text=True)
+            result = subprocess.run(['powershell', '-NoProfile', '-Command', cmd], check=True, capture_output=True, text=True)
             if "Added to PATH" in result.stdout:
                 modified = True
         except Exception:

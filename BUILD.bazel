@@ -1,10 +1,7 @@
-load("@rules_python//python:defs.bzl", "py_binary")
-load("@pypi//:requirements.bzl", "requirement")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
-py_binary(
-    name = "main",
-    srcs = ["main.py"],
-    deps = [
-        requirement("requests"),
-    ],
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements.in",
+    requirements_txt = "requirements.txt",
 )
