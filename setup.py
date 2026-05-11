@@ -15,6 +15,7 @@ import hashlib
 
 BAZELISK_VERSION = "v1.29.0"
 MISE_VERSION = "v2025.1.0"
+PREK_VERSION = "v0.3.13"
 
 BAZELISK_HASHES = {
     "bazelisk-darwin-amd64": "16c3d7aa15323a9fb69f56c7ec5733ed18bedb786680d0ba13bb12a3c8083007",
@@ -23,6 +24,15 @@ BAZELISK_HASHES = {
     "bazelisk-linux-arm64": "e20e8b0f4f240091b7a55bf17b9398bd4f40ee70ae0208dff95dd4c445fb4010",
     "bazelisk-windows-amd64.exe": "092a8738d5b41aae7a85c42cc961b1034e3389aba43ffc20c0fabda7b43e095b",
     "bazelisk-windows-arm64.exe": "8bc42bd5d7857f18a21440b906469bb6c7cf91a7c72364d4b1e5ec56a76fe94f"
+}
+
+PREK_HASHES = {
+    "prek-x86_64-pc-windows-msvc.zip": "ca32a6451cfdd22a27d99313b3a2f91eb0ce6d191eb8e35e2467f1551252ebbb",
+    "prek-aarch64-pc-windows-msvc.zip": "892cb69e81c5c77c8af23dd930d4bcf578b8f62765ee00e3ba8fb76d2035eb34",
+    "prek-x86_64-apple-darwin.tar.gz": "2bbfdf15cfe6e954b98cb27094828f5c55a8bec0a02cf55041f783c71e3b8955",
+    "prek-aarch64-apple-darwin.tar.gz": "0b3b3dd0fbab7b95217280248196bde741b47b8de7bf60de50b4a12a9cc17b1f",
+    "prek-x86_64-unknown-linux-gnu.tar.gz": "40898b110cdb0d70d3b7461c9e468d5821ce144c8ba890eedf22bf49e4817274",
+    "prek-aarch64-unknown-linux-gnu.tar.gz": "0112ffa44a0aaa869aa9da45393b7a4d7c30c24abd6e540bac0494db24844c79",
 }
 
 # On Windows, install to C:\dev\bin — a conventional, space-free developer tools directory.
@@ -176,6 +186,87 @@ def install_mise(force=False):
             print(f"\nFailed to install mise: {e}")
             sys.exit(1)
 
+def install_prek(force=False):
+    existing = shutil.which("prek")
+    if existing and not force:
+        print(f"[✓] Prek is already installed at {existing}")
+    else:
+        os_name, arch, ext = get_platform_info()
+        local_bin = get_local_bin(os_name)
+        os.makedirs(local_bin, exist_ok=True)
+        
+        if os_name == "windows":
+            platform_str = "pc-windows-msvc"
+            archive_ext = ".zip"
+        elif os_name == "darwin":
+            platform_str = "apple-darwin"
+            archive_ext = ".tar.gz"
+        else:
+            platform_str = "unknown-linux-gnu"
+            archive_ext = ".tar.gz"
+            
+        # mapping architectures to prek formats
+        prek_arch = "x86_64" if arch == "amd64" else "aarch64"
+        
+        filename = f"prek-{prek_arch}-{platform_str}{archive_ext}"
+        url = f"https://github.com/j178/prek/releases/download/{PREK_VERSION}/{filename}"
+        archive_path = os.path.join(local_bin, filename)
+        out_path = os.path.join(local_bin, f"prek{ext}")
+        
+        print(f"Installing prek {PREK_VERSION} to {out_path}... ", end="", flush=True)
+        
+        expected_hash = PREK_HASHES.get(filename)
+        if not expected_hash:
+            print(f"\nError: No known SHA256 hash for {filename}. Aborting for security.")
+            sys.exit(1)
+            
+        try:
+            urllib.request.urlretrieve(url, archive_path)
+            is_valid, actual_hash = verify_sha256(archive_path, expected_hash)
+            
+            if not is_valid:
+                print(f"\nSECURITY ERROR: Hash mismatch for {filename}!")
+                print(f"Expected: {expected_hash}")
+                print(f"Actual:   {actual_hash}")
+                os.remove(archive_path)
+                sys.exit(1)
+                
+            if archive_ext == ".zip":
+                import zipfile
+                with zipfile.ZipFile(archive_path, 'r') as z:
+                    for name in z.namelist():
+                        if name.endswith('prek.exe') or name == 'prek.exe':
+                            with z.open(name) as zf, open(out_path, 'wb') as f:
+                                shutil.copyfileobj(zf, f)
+                            break
+            else:
+                import tarfile
+                with tarfile.open(archive_path, "r:gz") as tar:
+                    for member in tar.getmembers():
+                        if member.name.endswith('prek') or member.name.split('/')[-1] == 'prek':
+                            member.name = os.path.basename(member.name)
+                            f = tar.extractfile(member)
+                            with open(out_path, 'wb') as out_f:
+                                shutil.copyfileobj(f, out_f)
+                            break
+                            
+            os.remove(archive_path)
+            if os_name != "windows":
+                os.chmod(out_path, 0o755)
+            print("Done.")
+        except Exception as e:
+            print(f"\nFailed to install prek: {e}")
+            sys.exit(1)
+            
+    # Always try to install hooks into the repo
+    print("Setting up git hooks with prek... ", end="", flush=True)
+    try:
+        subprocess.run(["prek", "install"], check=True, capture_output=True)
+        print("Done.")
+    except Exception as e:
+        print(f"Failed to run prek install: {e}")
+
+
 def setup_pwsh_profile(local_bin):
     """Injects mise activation into the user's PowerShell profile.
     Uses ScriptBlock dot-sourcing to evaluate the multi-line activation script
@@ -292,6 +383,7 @@ def main():
         
     install_bazelisk(force=args.force)
     install_mise(force=args.force)
+    install_prek(force=args.force)
     
     profile_modified = False
     if os_name == "windows":
