@@ -29,6 +29,7 @@ def main():
         subprocess.run([*bazel_cmd, "run", target, f"--script_path={tmp_name}"], check=True, capture_output=True)
         
         lines = tmp_name.read_text().splitlines()
+        print(tmp_name.read_text())
             
         new_lines = []
         for line in lines:
@@ -41,13 +42,10 @@ def main():
                     if parts and parts[0].endswith(".update.exe"):
                         # Use pathlib to strip the extension
                         exe_path = Path(parts[0])
-                        parts[0] = str(exe_path.with_suffix("")) # Removes .exe
-                        
-                        # Prepend the python executable
-                        parts.insert(0, sys.executable)
+                        update_py = str(exe_path.with_suffix("")) # Removes .exe
                         
                         # Reconstruct the line with proper quoting for each part
-                        line = " ".join(f'"{p}"' for p in parts)
+                        line = f'"{sys.executable}" "{update_py}" {line[line.find(parts[0])+len(parts[0]):].strip()}'
                 except ValueError as e:
                     print(f"Error: Failed to parse command line with shlex: {e}")
                     print(f"Offending line: {line}")
@@ -55,6 +53,7 @@ def main():
             new_lines.append(line)
             
         tmp_name.write_text("\n".join(new_lines))
+        print(tmp_name.read_text())
             
         print("Running requirements update...")
         # Run the modified script. It handles all environment variables and arguments.
