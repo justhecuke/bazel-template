@@ -3,3 +3,11 @@ repos:
     rev: v0.8.0
     hooks:
       - id: keep-sorted
+  - repo: local
+    hooks:
+      - id: update-requirements
+        name: update-requirements
+        entry: python ./bin/update_requirements.py
+        language: system
+        files: ^requirements\.in$
+        pass_filenames: false
