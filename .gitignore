@@ -1,4 +1,9 @@
+# keep-sorted start
 .venv/
 bazel-*/
+# keep-sorted end
 
+# keep-sorted start
 MODULE.bazel.lock
+pyproject.toml
+# keep-sorted end
