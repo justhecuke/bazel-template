@@ -12,6 +12,10 @@ import platform
 import argparse
 import subprocess
 import hashlib
+import json
+import zipfile
+import tarfile
+import re
 
 BAZELISK_VERSION = "v1.29.0"
 MISE_VERSION = "v2025.1.0"
@@ -39,6 +43,8 @@ PREK_HASHES = {
 # This avoids a known bug in `mise activate pwsh` that breaks when the path contains spaces
 # (common for Windows user profiles like C:\Users\John Doe\...).
 WINDOWS_LOCAL_BIN = r"C:\dev\bin"
+SETUP_START_MARKER = "# <bazel-template-setup-start>"
+SETUP_END_MARKER = "# <bazel-template-setup-end>"
 
 def get_local_bin(os_name=None):
     """Returns the platform-appropriate binary install directory."""
@@ -84,7 +90,7 @@ def verify_sha256(filepath, expected_hash):
 def install_bazelisk(force=False):
     existing = shutil.which("bazelisk")
     if existing and not force:
-        print(f"[✓] Bazelisk is already installed at {existing}")
+        print(f"[ok] Bazelisk is already installed at {existing}")
         return
 
     os_name, arch, ext = get_platform_info()
@@ -123,7 +129,7 @@ def install_bazelisk(force=False):
 def install_mise(force=False):
     existing = shutil.which("mise")
     if existing and not force:
-        print(f"[✓] Mise is already installed at {existing}")
+        print(f"[ok] Mise is already installed at {existing}")
         return
 
     os_name, _, _ = get_platform_info()
@@ -137,7 +143,6 @@ def install_mise(force=False):
         out_path = os.path.join(local_bin, "mise.exe")
         
         print(f"Installing mise {MISE_VERSION} to {out_path}... ", end="", flush=True)
-        import json
         url = f"https://api.github.com/repos/jdx/mise/releases/tags/{MISE_VERSION}"
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         try:
@@ -154,7 +159,6 @@ def install_mise(force=False):
                 print("\nCould not find Windows x64 zip archive in release assets.")
                 sys.exit(1)
                 
-            import zipfile
             zip_path = os.path.join(local_bin, "mise_temp.zip")
             
             urllib.request.urlretrieve(asset_url, zip_path)
@@ -189,7 +193,7 @@ def install_mise(force=False):
 def install_prek(force=False):
     existing = shutil.which("prek")
     if existing and not force:
-        print(f"[✓] Prek is already installed at {existing}")
+        print(f"[ok] Prek is already installed at {existing}")
     else:
         os_name, arch, ext = get_platform_info()
         local_bin = get_local_bin(os_name)
@@ -232,7 +236,6 @@ def install_prek(force=False):
                 sys.exit(1)
                 
             if archive_ext == ".zip":
-                import zipfile
                 with zipfile.ZipFile(archive_path, 'r') as z:
                     for name in z.namelist():
                         if name.endswith('prek.exe') or name == 'prek.exe':
@@ -240,7 +243,6 @@ def install_prek(force=False):
                                 shutil.copyfileobj(zf, f)
                             break
             else:
-                import tarfile
                 with tarfile.open(archive_path, "r:gz") as tar:
                     for member in tar.getmembers():
                         if member.name.endswith('prek') or member.name.split('/')[-1] == 'prek':
@@ -267,75 +269,68 @@ def install_prek(force=False):
         print(f"Failed to run prek install: {e}")
 
 
-def setup_pwsh_profile(local_bin):
-    """Injects mise activation into the user's PowerShell profile.
-    Uses ScriptBlock dot-sourcing to evaluate the multi-line activation script
-    as a whole unit, bypassing the line-by-line Invoke-Expression limitation.
-    Also ensures the PowerShell execution policy allows the profile to load.
+def configure_shell_profile(profile_path, local_bin):
+    """Injects mise activation into a specific shell profile or RC file.
+    Detects shell type based on file extension or OS fallback.
     Returns True if the profile was modified."""
-    # First, ensure the execution policy allows scripts to run.
-    # 'RemoteSigned' is the standard developer policy: local scripts run freely,
-    # downloaded scripts must be signed. This is required for $PROFILE to load.
-    try:
-        result = subprocess.run(
-            ['powershell', '-NoProfile', '-Command', 'Get-ExecutionPolicy -Scope CurrentUser'],
-            capture_output=True, text=True, check=True
-        )
-        policy = result.stdout.strip()
-        if policy in ('Undefined', 'Restricted'):
-            print("Setting PowerShell execution policy to RemoteSigned for current user... ", end="", flush=True)
-            subprocess.run(
-                ['powershell', '-NoProfile', '-Command', 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force'],
-                check=True, capture_output=True
-            )
-            print("Done.")
-        else:
-            print(f"[✓] PowerShell execution policy is already '{policy}'.")
-    except Exception as e:
-        print(f"Could not set execution policy: {e}")
+    profile_path = os.path.expanduser(profile_path)
+    os_name, _, _ = get_platform_info()
+    
+    # Detect shell type
+    ext = os.path.splitext(profile_path)[1].lower()
+    if ext in ('.ps1', '.psm1'):
+        shell_type = 'pwsh'
+    elif ext in ('.bashrc', '.zshrc', '.sh') or profile_path.endswith('rc'):
+        shell_type = 'unix'
+    else:
+        # Fallback to OS-level detection
+        shell_type = 'pwsh' if os_name == 'windows' else 'unix'
 
-    try:
-        result = subprocess.run(
-            ['powershell', '-NoProfile', '-Command', 'echo $PROFILE'],
-            capture_output=True, text=True, check=True
-        )
-        profile_path = result.stdout.strip()
-    except Exception as e:
-        print(f"Could not determine PowerShell profile path: {e}")
-        return False
+    print(f"Configuring shell profile at {profile_path} (detected type: {shell_type})... ", end="", flush=True)
 
-    # The activation line:
-    # We use '&' to call the executable and pipe the full output to Out-String
-    # then Invoke-Expression. This ensures multi-line scripts are evaluated
-    # as a single block, avoiding the line-by-line syntax error.
-    mise_exe = os.path.join(local_bin, 'mise.exe').replace('\\', '\\\\')
-    activation_marker = '# mise activate'
-    activation_line = f'{activation_marker}\n& "{mise_exe}" activate pwsh | Out-String | Invoke-Expression\n'
+    if shell_type == 'pwsh':
+        mise_exe = os.path.join(local_bin, 'mise.exe').replace('\\', '\\\\')
+        activation_block = f'{SETUP_START_MARKER}\n& "{mise_exe}" activate pwsh | Out-String | Invoke-Expression\n{SETUP_END_MARKER}\n'
+    else:
+        # For Unix, we assume mise is in the path or we use the ~/.local/bin/mise if it exists
+        mise_cmd = "mise"
+        # If we installed to a specific local_bin, try to use that
+        mise_path = os.path.join(local_bin, "mise")
+        if os.path.exists(mise_path):
+            mise_cmd = mise_path
+            
+        activation_block = f'{SETUP_START_MARKER}\neval "$("{mise_cmd}" activate bash)"\n{SETUP_END_MARKER}\n'
 
     try:
         content = ""
         if os.path.exists(profile_path):
             with open(profile_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-        
-        if activation_marker in content:
-            # Replace the old activation block with the new one
-            import re
-            # Regex to find the marker and the following line(s)
-            pattern = re.escape(activation_marker) + r".*?(\r?\n|$)"
-            new_content = re.sub(pattern, activation_line, content, flags=re.DOTALL)
-            if new_content == content:
-                # If regex didn't find a clean match to replace, just append (safe fallback)
-                new_content = content + "\n" + activation_line
         else:
-            new_content = content + "\n" + activation_line
+            # Create parent directories if they don't exist
+            os.makedirs(os.path.dirname(profile_path), exist_ok=True)
+        
+        # 1. Surgical replacement of existing block if found
+        pattern = re.compile(
+            rf"{re.escape(SETUP_START_MARKER)}.*?{re.escape(SETUP_END_MARKER)}(\r?\n|$)", 
+            re.DOTALL
+        )
+        if SETUP_START_MARKER in content:
+            new_content = pattern.sub(activation_block, content)
+        else:
+            # 2. Append to the end
+            new_content = content.rstrip() + "\n\n" + activation_block
 
-        with open(profile_path, 'w', encoding='utf-8') as f:
-            f.write(new_content)
-        print(f"[✓] Updated mise activation in PowerShell profile at {profile_path}")
-        return True
+        if new_content != content:
+            with open(profile_path, 'w', encoding='utf-8') as f:
+                f.write(new_content)
+            print("Done.")
+            return True
+        else:
+            print("Already up-to-date.")
+            return False
     except Exception as e:
-        print(f"Could not modify PowerShell profile: {e}")
+        print(f"\nError: Could not modify {profile_path}: {e}")
         return False
 
 
@@ -371,6 +366,8 @@ def ensure_windows_path(*paths):
 def main():
     parser = argparse.ArgumentParser(description="Provision global system dependencies for bazel-template.")
     parser.add_argument("--force", action="store_true", help="Force reinstall of pinned versions.")
+    parser.add_argument("--add-to-path", action="store_true", help="Automatically add install directory to User PATH.")
+    parser.add_argument("--configure-shell", metavar="PATH", help="Path to the shell profile/rc file to modify (e.g., $PROFILE or ~/.bashrc).")
     args = parser.parse_args()
     
     os_name, _, _ = get_platform_info()
@@ -385,12 +382,16 @@ def main():
     install_mise(force=args.force)
     install_prek(force=args.force)
     
+    path_modified = False
     profile_modified = False
-    if os_name == "windows":
-        path_modified = ensure_windows_path(local_bin)
-        profile_modified = setup_pwsh_profile(local_bin)
     
-    print("\n[✓] Setup complete!")
+    if args.add_to_path and os_name == "windows":
+        path_modified = ensure_windows_path(local_bin)
+        
+    if args.configure_shell:
+        profile_modified = configure_shell_profile(args.configure_shell, local_bin)
+    
+    print("\n[ok] Setup complete!")
     if os_name != "windows":
         print("Ensure ~/.local/bin (and ~/.local/share/mise/bin if using mise) is in your PATH.")
         
@@ -402,11 +403,24 @@ def main():
         if path_modified:
             print(f"Your Windows User PATH was modified to include {local_bin}.")
         if profile_modified:
-            print("Mise activation was added to your PowerShell profile.")
-            print("This means any NEW terminal will be automatically activated.")
+            print(f"Mise activation was added to {args.configure_shell}.")
+            print("This means any NEW terminal using that profile will be automatically activated.")
         print("You MUST completely close your IDE and reopen it for changes")
         print("to take effect in integrated terminals.")
         print("="*60 + "\n")
+    else:
+        print("\n" + "-"*60)
+        print("Next Steps:".center(60))
+        print("-"*60)
+        if not path_modified and os_name == "windows":
+            print(f"1. Add {local_bin} to your PATH manually, or run with --add-to-path")
+        print("2. Activate the environment in your shell:")
+        if os_name == "windows":
+            print("   mise activate pwsh | Out-String | Invoke-Expression")
+        else:
+            print('   eval "$(mise activate bash)" # or zsh')
+        print(f"3. (Optional) Run with --configure-shell for automatic activation.")
+        print("-"*60 + "\n")
 
 if __name__ == "__main__":
     main()

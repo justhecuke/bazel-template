@@ -1,5 +1,5 @@
-# bazel-template
-Skeleton to get started with bazel quickly, enforcing strict hermeticity and cross-platform compatibility.
+# Bazel Template
+A skeleton to get started with Bazel quickly, enforcing strict hermeticity and cross-platform compatibility.
 
 ## Initial Setup
 
@@ -8,11 +8,18 @@ This repository uses a completely hermetic Bazel setup. You should **not** insta
 To bootstrap this environment, we use `mise` to automatically manage your `PATH`. 
 
 ### 1. Provision System Dependencies
-Run the initial setup script to download the required global bootstrappers (`bazelisk` and `mise`).
-```shell
-python setup.py
+Run the initial setup script to download the required global bootstrappers (`bazelisk` and `mise`). We recommend using the `--add-to-path` flag to update your system PATH, and the `--configure-shell` flag to automatically inject activation into your shell profile.
+
+**On Windows (PowerShell):**
+```powershell
+python setup.py --add-to-path --configure-shell $PROFILE
 ```
-*Note: On Windows, binaries are installed to `C:\dev\bin` and that directory is automatically added to your Windows User `PATH` via the registry. On Mac/Linux, they are installed to `~/.local/bin`.*
+
+**On macOS/Linux (Bash/Zsh):**
+```bash
+python setup.py --configure-shell ~/.bashrc # or ~/.zshrc
+```
+*Note: On Windows, binaries are installed to `C:\dev\bin` (this can be automatically added to your Windows User `PATH` via the `--add-to-path` flag). On Mac/Linux, they are installed to `~/.local/bin`.*
 
 ### 2. Restart Your IDE Completely
 `setup.py` modifies your Windows User `PATH` in the registry. This change **will not be visible** to any terminal that was already open, including "new terminal" tabs inside your IDE — those inherit the IDE process's environment, which was frozen at launch time.
@@ -28,25 +35,25 @@ mise trust
 ```
 
 ### 4. Activate the Environment
-This injects `./bin` into your `PATH` so you can use `bazel`, `buildifier`, etc. transparently.
+This injects `./bin` into your `PATH` so you can use Bazel, Buildifier, etc. transparently.
 
-**Windows (PowerShell):** Run the included `Activate.ps1` script. The leading `. ` (dot-space) is critical — it [dot-sources](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_scripts#script-scope-and-dot-sourcing) the script so environment changes apply to your current session:
+**Persistent Activation:**
+If you ran `setup.py` with the `--configure-shell <PATH>` flag, it configured the specified profile file to automatically activate the environment in every new terminal session.
+
+**Current Session Activation:**
+If you want to activate the environment in your *current* terminal without restarting, run the following command:
+
+**Windows (PowerShell):**
 ```powershell
-. .\Activate.ps1
+mise activate pwsh | Out-String | Invoke-Expression
 ```
+*Note: We use `Out-String | Invoke-Expression` to ensure the multi-line activation script is evaluated as a single block, avoiding syntax errors caused by line-by-line execution.*
 
-> **Why not `mise activate pwsh | Invoke-Expression`?** PowerShell evaluates piped input **line-by-line**, which splits multi-line function bodies in the activation script across separate `Invoke-Expression` calls, causing a syntax error. `Activate.ps1` works around this by writing the full script to a temp file and dot-sourcing it as a whole.
-
-To activate automatically on every new terminal, add it to your PowerShell profile:
-```powershell
-Add-Content $PROFILE "`n. D:\code\bazel-template\Activate.ps1"
-```
-
-**Mac/Linux:**
+**Mac/Linux (Bash/Zsh):**
 ```bash
 eval "$(mise activate bash)" # or zsh
 ```
-*(Add this to `~/.zshrc` or `~/.bashrc` to activate automatically.)*
+
 ### 5. Generate IDE Search Paths
 Bazel manages Python dependencies in a hermetic cache, which IDEs (like VS Code/Pyright) cannot discover by default. To fix import resolution errors, run the following command once to generate a local `pyproject.toml` containing the necessary search paths:
 ```shell
@@ -61,7 +68,7 @@ Now that `mise` is active, you can use the transparent wrappers as if they were 
 
 To run the Python template test:
 ```shell
-bazel run //:main
+bazel run //py:main
 ```
 
 To format Bazel files:
