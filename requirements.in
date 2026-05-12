@@ -1,2 +1,5 @@
-requests
+# keep-sorted start
 cyclopts
+requests
+types-requests
+# keep-sorted end
