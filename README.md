@@ -47,7 +47,12 @@ Add-Content $PROFILE "`n. D:\code\bazel-template\Activate.ps1"
 eval "$(mise activate bash)" # or zsh
 ```
 *(Add this to `~/.zshrc` or `~/.bashrc` to activate automatically.)*
-
+### 5. Generate IDE Search Paths
+Bazel manages Python dependencies in a hermetic cache, which IDEs (like VS Code/Pyright) cannot discover by default. To fix import resolution errors, run the following command once to generate a local `pyproject.toml` containing the necessary search paths:
+```shell
+python bin/update_ide_paths.py
+```
+*Note: This configuration is automatically updated by a pre-commit hook whenever `requirements.txt` changes.*
 
 
 ## Usage

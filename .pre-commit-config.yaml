@@ -11,3 +11,9 @@ repos:
         language: system
         files: ^requirements\.in$
         pass_filenames: false
+      - id: update-ide-paths
+        name: update-ide-paths
+        entry: python ./bin/update_ide_paths.py
+        language: system
+        files: ^requirements\.txt$
+        pass_filenames: false
