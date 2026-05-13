@@ -5,3 +5,5 @@ compile_pip_requirements(
     src = "requirements.in",
     requirements_txt = "requirements.txt",
 )
+
+exports_files(["pyproject.toml"])

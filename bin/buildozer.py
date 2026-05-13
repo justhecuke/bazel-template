@@ -5,8 +5,8 @@ Wrapper to run hermetic buildozer via Bazel.
 
 import os
 import pathlib
-import sys
 import subprocess
+import sys
 
 
 def main():
@@ -19,13 +19,13 @@ def main():
     try:
         sep_idx = sys.argv.index("--")
         flags = sys.argv[1:sep_idx]
-        files = [str(pathlib.Path(f).resolve()) for f in sys.argv[sep_idx + 1:]]
+        files = [str(pathlib.Path(f).resolve()) for f in sys.argv[sep_idx + 1 :]]
         extra_args = flags + (["--"] + files if files else [])
     except ValueError:
         # No '--' found, just pass everything through as is.
         extra_args = sys.argv[1:]
 
-    cmd = [sys.executable, bazel_py, "run", "@buildifier_prebuilt//:buildozer", "--"] + extra_args
+    cmd = [sys.executable, bazel_py, "run", "//tools:buildozer", "--"] + extra_args
 
     if sys.platform != "win32":
         os.execvp(sys.executable, cmd)

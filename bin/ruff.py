@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""
-Wrapper to run hermetic buildifier via Bazel.
-"""
-
 import os
-import pathlib
 import subprocess
 import sys
 
@@ -14,10 +9,11 @@ def main():
     bazel_py = os.path.join(os.path.dirname(__file__), "bazel.py")
 
     # If the caller provides a '--' separator, we treat everything after it as
-    # a file path and resolve it to an absolute path. This is crucial for hooks
-    # like prek/pre-commit because Bazel runs the tool in a sandbox where
-    # relative paths are invalid.
+    # a file path and resolve it to an absolute path. This ensures that even
+    # if ruff is run from Bazel's sandbox, it can find local files.
     try:
+        import pathlib
+
         sep_idx = sys.argv.index("--")
         flags = sys.argv[1:sep_idx]
         files = [str(pathlib.Path(f).resolve()) for f in sys.argv[sep_idx + 1 :]]
@@ -26,7 +22,8 @@ def main():
         # No '--' found, just pass everything through as is.
         extra_args = sys.argv[1:]
 
-    cmd = [sys.executable, bazel_py, "run", "//tools:buildifier", "--"] + extra_args
+    # Use //tools:ruff which is an alias to the hermetic binary.
+    cmd = [sys.executable, bazel_py, "run", "//tools:ruff", "--"] + extra_args
 
     if sys.platform != "win32":
         os.execvp(sys.executable, cmd)

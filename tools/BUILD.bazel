@@ -1,0 +1,17 @@
+alias(
+    name = "ruff",
+    actual = "@ruff//:ruff",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "buildifier",
+    actual = "@buildifier_prebuilt//:buildifier",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "buildozer",
+    actual = "@buildifier_prebuilt//:buildozer",
+    visibility = ["//visibility:public"],
+)
