@@ -19,3 +19,8 @@ build:windows --nolegacy_external_runfiles
 # Force rules_python to use the 'script' bootstrap instead of the new 'venv' 
 # bootstrap on Windows, as the latter requires symlink privileges (WinError 1314).
 build:windows --@rules_python//python/config_settings:bootstrap_impl=script
+
+# Linting settings
+# To run linting: bazel build --config=lint //...
+build:lint --aspects //tools:lint.bzl%ruff
+build:lint --output_groups=+rules_lint_human

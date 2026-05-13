@@ -22,3 +22,13 @@ repos:
         entry: python ./bin/buildifier.py -lint fix -mode fix --
         language: system
         files: (^|/)(BUILD\.bazel|MODULE\.bazel|.*\.bzl)$
+      - id: ruff-check
+        name: ruff-check
+        entry: python ./bin/ruff.py check --fix --force-exclude --
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff-format
+        entry: python ./bin/ruff.py format --force-exclude --
+        language: system
+        types: [python]
