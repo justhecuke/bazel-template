@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Agent Instructions for bazel-template
 
 This repository adheres to a strict philosophy of **Bazel-driven hermeticity**. When acting as an AI assistant or performing automated tasks in this workspace, you must follow these rules.
