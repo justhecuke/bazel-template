@@ -17,3 +17,8 @@ repos:
         language: system
         files: ^requirements\.txt$
         pass_filenames: false
+      - id: buildifier
+        name: buildifier
+        entry: python ./bin/buildifier.py -lint fix -mode fix --
+        language: system
+        files: (^|/)(BUILD\.bazel|MODULE\.bazel|.*\.bzl)$

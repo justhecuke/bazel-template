@@ -11,7 +11,7 @@ build:windows --action_env=TEMP
 build:windows --action_env=TMP
 
 # Symlink-based runfiles require Windows Developer Mode.
-# We disable them by default to ensure portability; Bazel will use a 
+# We disable them by default to ensure portability; Bazel will use a
 # manifest file instead.
 build:windows --enable_runfiles=no
 build:windows --nolegacy_external_runfiles
