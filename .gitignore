@@ -1,5 +1,6 @@
 # keep-sorted start
 .venv/
+__pycache__/
 bazel-*/
 # keep-sorted end
 
