@@ -1,23 +1,26 @@
-load("@pypi//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+# gazelle:python_generation_mode file
 
 py_library(
     name = "calculator",
     srcs = ["calculator.py"],
+    visibility = ["//:__subpackages__"],
+)
+
+py_binary(
+    name = "main",
+    srcs = ["main.py"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":calculator",
+        "@pypi//cyclopts",
+        "@pypi//requests",
+    ],
 )
 
 py_test(
     name = "calculator_test",
     srcs = ["calculator_test.py"],
     deps = [":calculator"],
-)
-
-py_binary(
-    name = "main",
-    srcs = ["main.py"],
-    deps = [
-        ":calculator",
-        requirement("requests"),
-        requirement("cyclopts"),
-    ],
 )
