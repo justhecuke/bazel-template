@@ -1,6 +1,6 @@
+import re
 import subprocess
 import sys
-import re
 import textwrap
 from pathlib import Path
 
@@ -15,24 +15,26 @@ def main():
     bin_dir = Path(__file__).parent
     bazel_py = bin_dir / "bazel.py"
     bazel_cmd = [sys.executable, str(bazel_py)]
-    
+
     print("Querying Bazel for external pip dependencies...")
-    # Using deps(@pypi//..., 1) to reduce search space to just the direct packages and their py_library rules
-    query = 'kind(py_library, deps(@pypi//..., 1))'
-    
+    # Using deps(@pip//..., 1) to reduce search space to just the direct packages and their py_library rules
+    query = "kind(py_library, deps(@pip//..., 1))"
+
     try:
         # --keep_going gracefully ignores cross-platform wheel evaluation errors in external repos.
         # check=False because --keep_going causes Bazel to return exit code 1 even on partial success.
         result = subprocess.run(
             [*bazel_cmd, "query", "--keep_going", query, "--output=location"],
-            capture_output=True, text=True, check=False
+            capture_output=True,
+            text=True,
+            check=False,
         )
     except Exception as e:
         print(f"Error executing bazel query: {e}")
         sys.exit(1)
 
     extra_paths = set()
-    
+
     # Parse the output lines.
     # Format: <path>:<line>:<col>: py_library rule <label> ...
     # Example: D:/bazelout/.../BUILD.bazel:6:34: py_library rule @@rules_python++pip+pypi_...
@@ -61,7 +63,7 @@ def main():
         # user fetches or builds the relevant targets.
         # Use as_posix() to ensure forward slashes are used on all platforms.
         extra_paths.add(site_packages_dir.as_posix())
-                
+
     if not extra_paths:
         print("Warning: No pip dependency paths found.")
 
@@ -71,10 +73,10 @@ def main():
     # We use 12 spaces in the join to match the indentation in the f-string
     # (8 space base + 4 space indent) so dedent works correctly.
     path_lines = ",\n            ".join(toml_str(p) for p in sorted_paths)
-    
-    start_marker = "# <pypi-site-package-pyright-start>"
-    end_marker = "# <pypi-site-package-pyright-end>"
-    
+
+    start_marker = "# <pip-site-package-pyright-start>"
+    end_marker = "# <pip-site-package-pyright-end>"
+
     pyright_block = textwrap.dedent(f"""\
         {start_marker}
         [tool.pyright]
@@ -92,10 +94,7 @@ def main():
 
     if start_marker in original and end_marker in original:
         # Surgical replacement of the existing marked block.
-        pattern = re.compile(
-            rf"{re.escape(start_marker)}.*?{re.escape(end_marker)}", 
-            re.DOTALL
-        )
+        pattern = re.compile(rf"{re.escape(start_marker)}.*?{re.escape(end_marker)}", re.DOTALL)
         new_content = pattern.sub(pyright_block, original)
     else:
         # Nothing found, just append to the end.
@@ -104,6 +103,7 @@ def main():
     config_path.write_text(new_content.lstrip(), encoding="utf-8")
 
     print(f"[OK] Updated [tool.pyright] in {config_path.name} with {len(extra_paths)} external search paths.")
+
 
 if __name__ == "__main__":
     main()

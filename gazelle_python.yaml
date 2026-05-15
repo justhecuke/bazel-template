@@ -21,5 +21,5 @@ manifest:
     rich_rst: rich_rst
     urllib3: urllib3
   pip_repository:
-    name: pypi
-integrity: c9937b9d5e74670bd4ac4699eec460856b7e4fc706760618224d4da1a9ec9bbb
+    name: pip
+integrity: 3520b88b90b720f39a8ac19447bc1489277aec82274c0d0dafda1568e9bae616
