@@ -14,8 +14,8 @@ py_binary(
     visibility = ["//:__subpackages__"],
     deps = [
         ":calculator",
-        "@pypi//cyclopts",
-        "@pypi//requests",
+        "@pip//cyclopts",
+        "@pip//requests",
     ],
 )
 
