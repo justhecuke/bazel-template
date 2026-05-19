@@ -142,6 +142,7 @@ def install_mise(force=False):
 
     env = os.environ.copy()
     env["MISE_VERSION"] = MISE_VERSION.lstrip("v")
+    env["MISE_YES"] = "1"
 
     if os_name == "windows":
         local_bin = get_local_bin(os_name)
