@@ -1,7 +1,5 @@
-import re
 import subprocess
 import sys
-import textwrap
 from pathlib import Path
 
 
@@ -69,40 +67,24 @@ def main():
 
     sorted_paths = sorted(extra_paths)
 
-    # Build the [tool.pyright] TOML block with markers.
-    # We use 12 spaces in the join to match the indentation in the f-string
-    # (8 space base + 4 space indent) so dedent works correctly.
-    path_lines = ",\n            ".join(toml_str(p) for p in sorted_paths)
+    # Write to pyright-extra-paths.json
+    import json
 
-    start_marker = "# <pip-site-package-pyright-start>"
-    end_marker = "# <pip-site-package-pyright-end>"
-
-    pyright_block = textwrap.dedent(f"""\
-        {start_marker}
-        [tool.pyright]
-        extraPaths = [
-            {path_lines}
-        ]
-        {end_marker}
-    """).strip()
-
-    # Merge into pyproject.toml surgically.
     workspace_dir = bin_dir.parent
-    config_path = workspace_dir / "pyproject.toml"
+    config_path = workspace_dir / "pyright-extra-paths.json"
 
-    original = config_path.read_text(encoding="utf-8") if config_path.exists() else ""
+    config_data = {}
+    if config_path.exists():
+        try:
+            config_data = json.loads(config_path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
 
-    if start_marker in original and end_marker in original:
-        # Surgical replacement of the existing marked block.
-        pattern = re.compile(rf"{re.escape(start_marker)}.*?{re.escape(end_marker)}", re.DOTALL)
-        new_content = pattern.sub(pyright_block, original)
-    else:
-        # Nothing found, just append to the end.
-        new_content = original.rstrip() + "\n\n" + pyright_block + "\n"
+    config_data["extraPaths"] = sorted_paths
 
-    config_path.write_text(new_content.lstrip(), encoding="utf-8")
+    config_path.write_text(json.dumps(config_data, indent=4) + "\n", encoding="utf-8")
 
-    print(f"[OK] Updated [tool.pyright] in {config_path.name} with {len(extra_paths)} external search paths.")
+    print(f"[OK] Updated {config_path.name} with {len(extra_paths)} external search paths.")
 
 
 if __name__ == "__main__":

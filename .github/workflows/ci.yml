@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  ci:
+    name: Continuous Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Add wrappers and tools to PATH
+        run: |
+          echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          # Enable advanced caching for extremely fast subsequent runs
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+
+      - name: Bootstrap prek and tools
+        run: python setup.py
+
+      # Run prek to check formatting, requirements, and lints.
+      # Because the configuration uses local wrapper scripts,
+      # it runs ruff and buildifier through our hermetic Bazel wrappers.
+      - name: Run prek hooks
+        env:
+          SKIP: update-ide-paths
+        run: |
+          prek run --all-files --show-diff-on-failure
+
+      # Run all bazel tests with linter aspect active to verify target lints and correctness
+      - name: Run Bazel tests and linter aspect
+        run: |
+          bazel test --config=lint //...

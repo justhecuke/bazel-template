@@ -4,18 +4,18 @@ Setup script to provision global system dependencies: bazelisk and mise.
 Cross-platform support for Windows, macOS, and Linux.
 """
 
-import os
-import sys
-import shutil
-import urllib.request
-import platform
 import argparse
-import subprocess
 import hashlib
 import json
-import zipfile
-import tarfile
+import os
+import platform
 import re
+import shutil
+import subprocess
+import sys
+import tarfile
+import urllib.request
+import zipfile
 
 BAZELISK_VERSION = "v1.29.0"
 MISE_VERSION = "v2025.1.0"
@@ -27,7 +27,7 @@ BAZELISK_HASHES = {
     "bazelisk-linux-amd64": "5a408715e932c0250d28bd84555f12edbf70117de42f9181691c736eacc4a992",
     "bazelisk-linux-arm64": "e20e8b0f4f240091b7a55bf17b9398bd4f40ee70ae0208dff95dd4c445fb4010",
     "bazelisk-windows-amd64.exe": "092a8738d5b41aae7a85c42cc961b1034e3389aba43ffc20c0fabda7b43e095b",
-    "bazelisk-windows-arm64.exe": "8bc42bd5d7857f18a21440b906469bb6c7cf91a7c72364d4b1e5ec56a76fe94f"
+    "bazelisk-windows-arm64.exe": "8bc42bd5d7857f18a21440b906469bb6c7cf91a7c72364d4b1e5ec56a76fe94f",
 }
 
 PREK_HASHES = {
@@ -46,6 +46,7 @@ WINDOWS_LOCAL_BIN = r"C:\dev\bin"
 SETUP_START_MARKER = "# <bazel-template-setup-start>"
 SETUP_END_MARKER = "# <bazel-template-setup-end>"
 
+
 def get_local_bin(os_name=None):
     """Returns the platform-appropriate binary install directory."""
     if os_name is None:
@@ -54,10 +55,11 @@ def get_local_bin(os_name=None):
         return WINDOWS_LOCAL_BIN
     return os.path.join(os.path.expanduser("~"), ".local", "bin")
 
+
 def get_platform_info():
     system = platform.system().lower()
     machine = platform.machine().lower()
-    
+
     if system == "windows":
         os_name = "windows"
         ext = ".exe"
@@ -67,18 +69,20 @@ def get_platform_info():
     else:
         os_name = "linux"
         ext = ""
-        
+
     if machine in ["x86_64", "amd64"]:
         arch = "amd64"
     elif machine in ["aarch64", "arm64"]:
         arch = "arm64"
     else:
-        arch = "amd64" # fallback
-        
+        arch = "amd64"  # fallback
+
     return os_name, arch, ext
+
 
 def check_command(cmd):
     return shutil.which(cmd) is not None
+
 
 def verify_sha256(filepath, expected_hash):
     sha256_hash = hashlib.sha256()
@@ -86,6 +90,7 @@ def verify_sha256(filepath, expected_hash):
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest() == expected_hash, sha256_hash.hexdigest()
+
 
 def install_bazelisk(force=False):
     existing = shutil.which("bazelisk")
@@ -96,29 +101,29 @@ def install_bazelisk(force=False):
     os_name, arch, ext = get_platform_info()
     local_bin = get_local_bin(os_name)
     os.makedirs(local_bin, exist_ok=True)
-    
+
     filename = f"bazelisk-{os_name}-{arch}{ext}"
     url = f"https://github.com/bazelbuild/bazelisk/releases/download/{BAZELISK_VERSION}/{filename}"
     out_path = os.path.join(local_bin, f"bazelisk{ext}")
-    
+
     print(f"Installing bazelisk {BAZELISK_VERSION} to {out_path}... ", end="", flush=True)
-    
+
     expected_hash = BAZELISK_HASHES.get(filename)
     if not expected_hash:
         print(f"\nError: No known SHA256 hash for {filename}. Aborting for security.")
         sys.exit(1)
-        
+
     try:
         urllib.request.urlretrieve(url, out_path)
         is_valid, actual_hash = verify_sha256(out_path, expected_hash)
-        
+
         if not is_valid:
             print(f"\nSECURITY ERROR: Hash mismatch for {filename}!")
             print(f"Expected: {expected_hash}")
             print(f"Actual:   {actual_hash}")
             os.remove(out_path)
             sys.exit(1)
-            
+
         if os_name != "windows":
             os.chmod(out_path, 0o755)
         print("Done.")
@@ -126,56 +131,62 @@ def install_bazelisk(force=False):
         print(f"\nFailed to install bazelisk: {e}")
         sys.exit(1)
 
-def install_mise(force=False):
+
+def install_mise(force=False):  # noqa: C901
     existing = shutil.which("mise")
     if existing and not force:
         print(f"[ok] Mise is already installed at {existing}")
         return
 
     os_name, _, _ = get_platform_info()
-    
+
     env = os.environ.copy()
-    env["MISE_VERSION"] = MISE_VERSION.lstrip('v')
-    
+    env["MISE_VERSION"] = MISE_VERSION.lstrip("v")
+    env["MISE_YES"] = "1"
+
     if os_name == "windows":
         local_bin = get_local_bin(os_name)
         os.makedirs(local_bin, exist_ok=True)
         out_path = os.path.join(local_bin, "mise.exe")
-        
+
         print(f"Installing mise {MISE_VERSION} to {out_path}... ", end="", flush=True)
         url = f"https://api.github.com/repos/jdx/mise/releases/tags/{MISE_VERSION}"
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         try:
             with urllib.request.urlopen(req) as response:
                 data = json.loads(response.read().decode())
-                
+
             asset_url = None
-            for asset in data.get('assets', []):
-                if 'windows' in asset['name'].lower() and 'x64' in asset['name'].lower() and asset['name'].endswith('.zip'):
-                    asset_url = asset['browser_download_url']
+            for asset in data.get("assets", []):
+                if (
+                    "windows" in asset["name"].lower()
+                    and "x64" in asset["name"].lower()
+                    and asset["name"].endswith(".zip")
+                ):
+                    asset_url = asset["browser_download_url"]
                     break
-                    
+
             if not asset_url:
                 print("\nCould not find Windows x64 zip archive in release assets.")
                 sys.exit(1)
-                
+
             zip_path = os.path.join(local_bin, "mise_temp.zip")
-            
+
             urllib.request.urlretrieve(asset_url, zip_path)
-            with zipfile.ZipFile(zip_path, 'r') as z:
+            with zipfile.ZipFile(zip_path, "r") as z:
                 exe_name = None
                 for name in z.namelist():
-                    if name.endswith('mise.exe') or name == 'mise.exe':
+                    if name.endswith("mise.exe") or name == "mise.exe":
                         exe_name = name
                         break
                 if exe_name:
-                    with z.open(exe_name) as zf, open(out_path, 'wb') as f:
+                    with z.open(exe_name) as zf, open(out_path, "wb") as f:
                         shutil.copyfileobj(zf, f)
                 else:
                     print("\nError: Could not find mise.exe inside the zip file.")
                     os.remove(zip_path)
                     sys.exit(1)
-                    
+
             os.remove(zip_path)
             print("Done.")
         except Exception as e:
@@ -190,7 +201,8 @@ def install_mise(force=False):
             print(f"\nFailed to install mise: {e}")
             sys.exit(1)
 
-def install_prek(force=False):
+
+def install_prek(force=False):  # noqa: C901
     existing = shutil.which("prek")
     if existing and not force:
         print(f"[ok] Prek is already installed at {existing}")
@@ -198,7 +210,7 @@ def install_prek(force=False):
         os_name, arch, ext = get_platform_info()
         local_bin = get_local_bin(os_name)
         os.makedirs(local_bin, exist_ok=True)
-        
+
         if os_name == "windows":
             platform_str = "pc-windows-msvc"
             archive_ext = ".zip"
@@ -208,50 +220,50 @@ def install_prek(force=False):
         else:
             platform_str = "unknown-linux-gnu"
             archive_ext = ".tar.gz"
-            
+
         # mapping architectures to prek formats
         prek_arch = "x86_64" if arch == "amd64" else "aarch64"
-        
+
         filename = f"prek-{prek_arch}-{platform_str}{archive_ext}"
         url = f"https://github.com/j178/prek/releases/download/{PREK_VERSION}/{filename}"
         archive_path = os.path.join(local_bin, filename)
         out_path = os.path.join(local_bin, f"prek{ext}")
-        
+
         print(f"Installing prek {PREK_VERSION} to {out_path}... ", end="", flush=True)
-        
+
         expected_hash = PREK_HASHES.get(filename)
         if not expected_hash:
             print(f"\nError: No known SHA256 hash for {filename}. Aborting for security.")
             sys.exit(1)
-            
+
         try:
             urllib.request.urlretrieve(url, archive_path)
             is_valid, actual_hash = verify_sha256(archive_path, expected_hash)
-            
+
             if not is_valid:
                 print(f"\nSECURITY ERROR: Hash mismatch for {filename}!")
                 print(f"Expected: {expected_hash}")
                 print(f"Actual:   {actual_hash}")
                 os.remove(archive_path)
                 sys.exit(1)
-                
+
             if archive_ext == ".zip":
-                with zipfile.ZipFile(archive_path, 'r') as z:
+                with zipfile.ZipFile(archive_path, "r") as z:
                     for name in z.namelist():
-                        if name.endswith('prek.exe') or name == 'prek.exe':
-                            with z.open(name) as zf, open(out_path, 'wb') as f:
+                        if name.endswith("prek.exe") or name == "prek.exe":
+                            with z.open(name) as zf, open(out_path, "wb") as f:
                                 shutil.copyfileobj(zf, f)
                             break
             else:
                 with tarfile.open(archive_path, "r:gz") as tar:
                     for member in tar.getmembers():
-                        if member.name.endswith('prek') or member.name.split('/')[-1] == 'prek':
+                        if member.name.endswith("prek") or member.name.split("/")[-1] == "prek":
                             member.name = os.path.basename(member.name)
                             f = tar.extractfile(member)
-                            with open(out_path, 'wb') as out_f:
+                            with open(out_path, "wb") as out_f:
                                 shutil.copyfileobj(f, out_f)
                             break
-                            
+
             os.remove(archive_path)
             if os_name != "windows":
                 os.chmod(out_path, 0o755)
@@ -259,7 +271,7 @@ def install_prek(force=False):
         except Exception as e:
             print(f"\nFailed to install prek: {e}")
             sys.exit(1)
-            
+
     # Always try to install hooks into the repo
     print("Setting up git hooks with prek... ", end="", flush=True)
     try:
@@ -275,22 +287,24 @@ def configure_shell_profile(profile_path, local_bin):
     Returns True if the profile was modified."""
     profile_path = os.path.expanduser(profile_path)
     os_name, _, _ = get_platform_info()
-    
+
     # Detect shell type
     ext = os.path.splitext(profile_path)[1].lower()
-    if ext in ('.ps1', '.psm1'):
-        shell_type = 'pwsh'
-    elif ext in ('.bashrc', '.zshrc', '.sh') or profile_path.endswith('rc'):
-        shell_type = 'unix'
+    if ext in (".ps1", ".psm1"):
+        shell_type = "pwsh"
+    elif ext in (".bashrc", ".zshrc", ".sh") or profile_path.endswith("rc"):
+        shell_type = "unix"
     else:
         # Fallback to OS-level detection
-        shell_type = 'pwsh' if os_name == 'windows' else 'unix'
+        shell_type = "pwsh" if os_name == "windows" else "unix"
 
     print(f"Configuring shell profile at {profile_path} (detected type: {shell_type})... ", end="", flush=True)
 
-    if shell_type == 'pwsh':
-        mise_exe = os.path.join(local_bin, 'mise.exe').replace('\\', '\\\\')
-        activation_block = f'{SETUP_START_MARKER}\n& "{mise_exe}" activate pwsh | Out-String | Invoke-Expression\n{SETUP_END_MARKER}\n'
+    if shell_type == "pwsh":
+        mise_exe = os.path.join(local_bin, "mise.exe").replace("\\", "\\\\")
+        activation_block = (
+            f'{SETUP_START_MARKER}\n& "{mise_exe}" activate pwsh | Out-String | Invoke-Expression\n{SETUP_END_MARKER}\n'
+        )
     else:
         # For Unix, we assume mise is in the path or we use the ~/.local/bin/mise if it exists
         mise_cmd = "mise"
@@ -298,23 +312,20 @@ def configure_shell_profile(profile_path, local_bin):
         mise_path = os.path.join(local_bin, "mise")
         if os.path.exists(mise_path):
             mise_cmd = mise_path
-            
+
         activation_block = f'{SETUP_START_MARKER}\neval "$("{mise_cmd}" activate bash)"\n{SETUP_END_MARKER}\n'
 
     try:
         content = ""
         if os.path.exists(profile_path):
-            with open(profile_path, 'r', encoding='utf-8') as f:
+            with open(profile_path, encoding="utf-8") as f:
                 content = f.read()
         else:
             # Create parent directories if they don't exist
             os.makedirs(os.path.dirname(profile_path), exist_ok=True)
-        
+
         # 1. Surgical replacement of existing block if found
-        pattern = re.compile(
-            rf"{re.escape(SETUP_START_MARKER)}.*?{re.escape(SETUP_END_MARKER)}(\r?\n|$)", 
-            re.DOTALL
-        )
+        pattern = re.compile(rf"{re.escape(SETUP_START_MARKER)}.*?{re.escape(SETUP_END_MARKER)}(\r?\n|$)", re.DOTALL)
         if SETUP_START_MARKER in content:
             new_content = pattern.sub(activation_block, content)
         else:
@@ -322,7 +333,7 @@ def configure_shell_profile(profile_path, local_bin):
             new_content = content.rstrip() + "\n\n" + activation_block
 
         if new_content != content:
-            with open(profile_path, 'w', encoding='utf-8') as f:
+            with open(profile_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
             print("Done.")
             return True
@@ -332,7 +343,6 @@ def configure_shell_profile(profile_path, local_bin):
     except Exception as e:
         print(f"\nError: Could not modify {profile_path}: {e}")
         return False
-
 
 
 def ensure_windows_path(*paths):
@@ -356,50 +366,57 @@ def ensure_windows_path(*paths):
         }}
         """
         try:
-            result = subprocess.run(['powershell', '-NoProfile', '-Command', cmd], check=True, capture_output=True, text=True)
+            result = subprocess.run(
+                ["powershell", "-NoProfile", "-Command", cmd], check=True, capture_output=True, text=True
+            )
             if "Added to PATH" in result.stdout:
                 modified = True
         except Exception:
             pass
     return modified
 
+
 def main():
     parser = argparse.ArgumentParser(description="Provision global system dependencies for bazel-template.")
     parser.add_argument("--force", action="store_true", help="Force reinstall of pinned versions.")
     parser.add_argument("--add-to-path", action="store_true", help="Automatically add install directory to User PATH.")
-    parser.add_argument("--configure-shell", metavar="PATH", help="Path to the shell profile/rc file to modify (e.g., $PROFILE or ~/.bashrc).")
+    parser.add_argument(
+        "--configure-shell",
+        metavar="PATH",
+        help="Path to the shell profile/rc file to modify (e.g., $PROFILE or ~/.bashrc).",
+    )
     args = parser.parse_args()
-    
+
     os_name, _, _ = get_platform_info()
     local_bin = get_local_bin(os_name)
-    
+
     # Ensure local_bin is in the current process PATH so shutil.which finds our installs
     # even if the user hasn't restarted their terminal yet.
     if local_bin not in os.environ.get("PATH", ""):
         os.environ["PATH"] = local_bin + os.pathsep + os.environ.get("PATH", "")
-        
+
     install_bazelisk(force=args.force)
     install_mise(force=args.force)
     install_prek(force=args.force)
-    
+
     path_modified = False
     profile_modified = False
-    
+
     if args.add_to_path and os_name == "windows":
         path_modified = ensure_windows_path(local_bin)
-        
+
     if args.configure_shell:
         profile_modified = configure_shell_profile(args.configure_shell, local_bin)
-    
+
     print("\n[ok] Setup complete!")
     if os_name != "windows":
         print("Ensure ~/.local/bin (and ~/.local/share/mise/bin if using mise) is in your PATH.")
-        
+
     needs_restart = path_modified or profile_modified
     if needs_restart:
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("!! ACTION REQUIRED !!".center(60))
-        print("="*60)
+        print("=" * 60)
         if path_modified:
             print(f"Your Windows User PATH was modified to include {local_bin}.")
         if profile_modified:
@@ -407,11 +424,11 @@ def main():
             print("This means any NEW terminal using that profile will be automatically activated.")
         print("You MUST completely close your IDE and reopen it for changes")
         print("to take effect in integrated terminals.")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")
     else:
-        print("\n" + "-"*60)
+        print("\n" + "-" * 60)
         print("Next Steps:".center(60))
-        print("-"*60)
+        print("-" * 60)
         if not path_modified and os_name == "windows":
             print(f"1. Add {local_bin} to your PATH manually, or run with --add-to-path")
         print("2. Activate the environment in your shell:")
@@ -419,9 +436,9 @@ def main():
             print("   mise activate pwsh | Out-String | Invoke-Expression")
         else:
             print('   eval "$(mise activate bash)" # or zsh')
-        print(f"3. (Optional) Run with --configure-shell for automatic activation.")
-        print("-"*60 + "\n")
+        print("3. (Optional) Run with --configure-shell for automatic activation.")
+        print("-" * 60 + "\n")
+
 
 if __name__ == "__main__":
     main()
-

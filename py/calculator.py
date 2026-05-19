@@ -1,6 +1,7 @@
 import ast
 import operator
 
+
 def evaluate_expression(expr: str) -> float:
     """
     Safely evaluate a mathematical string expression using Python's AST.
@@ -13,11 +14,11 @@ def evaluate_expression(expr: str) -> float:
         ast.Div: operator.truediv,
         ast.Pow: operator.pow,
         ast.BitXor: operator.pow,
-        ast.USub: operator.neg
+        ast.USub: operator.neg,
     }
 
     def eval_node(node):
-        if isinstance(node, ast.Num): # for python < 3.8
+        if isinstance(node, ast.Num):  # for python < 3.8
             return node.n
         elif isinstance(node, ast.Constant):
             return node.value
@@ -38,7 +39,7 @@ def evaluate_expression(expr: str) -> float:
             raise TypeError(f"Unsupported syntax: {type(node).__name__}")
 
     try:
-        parsed_ast = ast.parse(expr, mode='eval')
+        parsed_ast = ast.parse(expr, mode="eval")
         return float(eval_node(parsed_ast))
     except (SyntaxError, TypeError, ValueError) as e:
-        raise ValueError(f"Invalid mathematical expression '{expr}': {e}")
+        raise ValueError(f"Invalid mathematical expression '{expr}': {e}") from e
