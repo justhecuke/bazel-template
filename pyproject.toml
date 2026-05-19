@@ -1,3 +1,5 @@
+# Rule: We should not use per-file configuration in this file. 
+# Always prefer inline changes to work around discovered issues (either fixing problems or ignoring them inline).
 # <pip-site-package-pyright-start>
 [tool.pyright]
 extraPaths = [
@@ -37,9 +39,6 @@ unfixable = []
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-[tool.ruff.lint.per-file-ignores]
-# setup.py contains multi-platform provisioning logic and requires higher complexity tolerance.
-"setup.py" = ["C901"]
 
 [tool.ruff.format]
 # Like Black, use double quotes for strings.

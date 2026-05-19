@@ -132,7 +132,7 @@ def install_bazelisk(force=False):
         sys.exit(1)
 
 
-def install_mise(force=False):
+def install_mise(force=False):  # noqa: C901
     existing = shutil.which("mise")
     if existing and not force:
         print(f"[ok] Mise is already installed at {existing}")
@@ -202,7 +202,7 @@ def install_mise(force=False):
             sys.exit(1)
 
 
-def install_prek(force=False):
+def install_prek(force=False):  # noqa: C901
     existing = shutil.which("prek")
     if existing and not force:
         print(f"[ok] Prek is already installed at {existing}")
