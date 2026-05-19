@@ -1,10 +1,11 @@
 # keep-sorted start
 .venv/
+.vscode/
 __pycache__/
 bazel-*/
 # keep-sorted end
 
 # keep-sorted start
 MODULE.bazel.lock
-pyright-extra-paths.json
+pyrightconfig.json
 # keep-sorted end

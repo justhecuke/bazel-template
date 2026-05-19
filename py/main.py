@@ -8,7 +8,7 @@ app = App()
 
 
 @app.command
-def info():
+def info() -> None:
     """Display information about the Python environment and dependencies."""
     print(f"Python version: {sys.version}")
     print(f"Requests version: {requests.__version__}")
@@ -16,7 +16,7 @@ def info():
 
 
 @app.command
-def fetch(url: str):
+def fetch(url: str) -> None:
     """Fetch the status code from a given URL."""
     try:
         response = requests.get(url, timeout=5)
@@ -26,7 +26,7 @@ def fetch(url: str):
 
 
 @app.command
-def calc(expression: str):
+def calc(expression: str) -> None:
     """Evaluate a mathematical expression securely using AST parsing."""
     try:
         result = evaluate_expression(expression)
