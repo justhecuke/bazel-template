@@ -1,0 +1,52 @@
+# <pip-site-package-pyright-start>
+[tool.pyright]
+extraPaths = [
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_attrs/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_certifi/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_charset_normalizer/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_cyclopts/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_docstring_parser/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_docutils/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_idna/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_markdown_it_py/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_mdurl/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_pygments/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_requests/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_rich/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_rich_rst/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_types_requests/site-packages",
+    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_urllib3/site-packages"
+]
+# <pip-site-package-pyright-end>
+
+[tool.ruff]
+# Enable the flake8-bugbear (B) rules.
+line-length = 120
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.lint]
+# Enable Pyflakes (F), Mccabe (C90), isort (I), and Pycodestyle (E, W) by default.
+select = ["E", "F", "W", "I", "B", "C90", "UP", "N"]
+ignore = []
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+# setup.py contains multi-platform provisioning logic and requires higher complexity tolerance.
+"setup.py" = ["C901"]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"

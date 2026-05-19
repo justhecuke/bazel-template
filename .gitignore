@@ -6,5 +6,4 @@ bazel-*/
 
 # keep-sorted start
 MODULE.bazel.lock
-pyproject.toml
 # keep-sorted end
