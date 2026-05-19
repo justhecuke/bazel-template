@@ -6,4 +6,5 @@ bazel-*/
 
 # keep-sorted start
 MODULE.bazel.lock
+pyrightconfig.json
 # keep-sorted end

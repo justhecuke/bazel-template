@@ -1,25 +1,3 @@
-# Rule: We should not use per-file configuration in this file. 
-# Always prefer inline changes to work around discovered issues (either fixing problems or ignoring them inline).
-# <pip-site-package-pyright-start>
-[tool.pyright]
-extraPaths = [
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_attrs/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_certifi/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_charset_normalizer/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_cyclopts/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_docstring_parser/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_docutils/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_idna/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_markdown_it_py/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_mdurl/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_pygments/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_requests/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_rich/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_rich_rst/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_types_requests/site-packages",
-    "D:/bazelout/ashfzwi4/external/rules_python++pip+pip_311_urllib3/site-packages"
-]
-# <pip-site-package-pyright-end>
 
 [tool.ruff]
 # Enable the flake8-bugbear (B) rules.
