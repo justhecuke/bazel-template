@@ -67,11 +67,11 @@ def main():
 
     sorted_paths = sorted(extra_paths)
 
-    # Write to pyrightconfig.json
+    # Write to pyright-extra-paths.json
     import json
 
     workspace_dir = bin_dir.parent
-    config_path = workspace_dir / "pyrightconfig.json"
+    config_path = workspace_dir / "pyright-extra-paths.json"
 
     config_data = {}
     if config_path.exists():
