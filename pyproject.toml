@@ -2,7 +2,7 @@
 # Always prefer inline changes to work around discovered issues (either fixing problems or ignoring them inline).
 
 [tool.pyright]
-extends = "pyright-extra-paths.json"
+extends = "pyrightconfig.json"
 
 [tool.ruff]
 # Enable the flake8-bugbear (B) rules.

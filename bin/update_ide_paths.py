@@ -31,7 +31,9 @@ def main():
         print(f"Error executing bazel query: {e}")
         sys.exit(1)
 
-    extra_paths = set()
+    # Initialize with the workspace root so absolute imports of workspace packages
+    # resolve consistently in the IDE.
+    extra_paths = {"."}
 
     # Parse the output lines.
     # Format: <path>:<line>:<col>: py_library rule <label> ...
@@ -67,24 +69,26 @@ def main():
 
     sorted_paths = sorted(extra_paths)
 
-    # Write to pyright-extra-paths.json
+    # Write to pyrightconfig.json (which is in .gitignore)
+    # This is critical for Pyrefly / Pyright support to avoid checked-in absolute paths.
     import json
 
     workspace_dir = bin_dir.parent
-    config_path = workspace_dir / "pyright-extra-paths.json"
-
-    config_data = {}
-    if config_path.exists():
+    pyrightconfig_path = workspace_dir / "pyrightconfig.json"
+    pyrightconfig_data = {}
+    if pyrightconfig_path.exists():
         try:
-            config_data = json.loads(config_path.read_text(encoding="utf-8"))
+            pyrightconfig_data = json.loads(pyrightconfig_path.read_text(encoding="utf-8"))
         except Exception:
             pass
 
-    config_data["extraPaths"] = sorted_paths
+    pyrightconfig_data["extraPaths"] = sorted_paths
 
-    config_path.write_text(json.dumps(config_data, indent=4) + "\n", encoding="utf-8")
-
-    print(f"[OK] Updated {config_path.name} with {len(extra_paths)} external search paths.")
+    try:
+        pyrightconfig_path.write_text(json.dumps(pyrightconfig_data, indent=4) + "\n", encoding="utf-8")
+        print(f"[OK] Updated {pyrightconfig_path.name} with {len(extra_paths)} external search paths.")
+    except Exception as e:
+        print(f"Warning: Could not update pyrightconfig.json: {e}")
 
 
 if __name__ == "__main__":
