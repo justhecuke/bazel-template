@@ -1,5 +1,7 @@
 import unittest
+
 from py.calculator import evaluate_expression
+
 
 class TestCalculator(unittest.TestCase):
     def test_basic_operations(self):
@@ -23,10 +25,11 @@ class TestCalculator(unittest.TestCase):
     def test_invalid_syntax(self):
         with self.assertRaises(ValueError):
             evaluate_expression("2 + * 3")
-            
+
     def test_unsupported_operations(self):
         with self.assertRaises(ValueError):
             evaluate_expression("import os")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

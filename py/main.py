@@ -1,9 +1,12 @@
 import sys
+
 import requests
 from cyclopts import App
+
 from py.calculator import evaluate_expression
 
 app = App()
+
 
 @app.command
 def info():
@@ -11,6 +14,7 @@ def info():
     print(f"Python version: {sys.version}")
     print(f"Requests version: {requests.__version__}")
     print("Bazel hermetic Python template is working!")
+
 
 @app.command
 def fetch(url: str):
@@ -21,6 +25,7 @@ def fetch(url: str):
     except Exception as e:
         print(f"Failed to fetch {url}: {e}")
 
+
 @app.command
 def calc(expression: str):
     """Evaluate a mathematical expression securely using AST parsing."""
@@ -30,5 +35,6 @@ def calc(expression: str):
     except ValueError as e:
         print(f"Error: {e}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app()
