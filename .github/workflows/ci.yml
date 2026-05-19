@@ -38,6 +38,8 @@ jobs:
       # Because the configuration uses local wrapper scripts,
       # it runs ruff and buildifier through our hermetic Bazel wrappers.
       - name: Run prek hooks
+        env:
+          SKIP: update-ide-paths
         run: |
           prek run --all-files --show-diff-on-failure
 
