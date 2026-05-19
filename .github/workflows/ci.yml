@@ -24,7 +24,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Set up Bazel
-        uses: bazel-contrib/setup-bazel@v0.19.0
+        uses: bazel-contrib/setup-bazel@0.19.0
         with:
           # Enable advanced caching for extremely fast subsequent runs
           bazelisk-cache: true
