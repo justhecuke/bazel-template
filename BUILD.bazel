@@ -7,6 +7,7 @@ load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 # gazelle:exclude .venv
 # gazelle:exclude bazel-*
 # gazelle:exclude bin
+# gazelle:prefix bazel_template
 
 gazelle_binary(
     name = "gazelle_multilang",
@@ -15,6 +16,7 @@ gazelle_binary(
         # If you want to generate py_proto_library targets (PR #3057), then
         # the proto language plugin _must_ come before the rules_python plugin.
         #"@bazel_gazelle//language/proto",
+        "@gazelle//language/go",
         "@rules_python_gazelle_plugin//python",
     ],
 )
