@@ -24,3 +24,5 @@ build:windows --@rules_python//python/config_settings:bootstrap_impl=script
 # To run linting: bazel build --config=lint //...
 build:lint --aspects //tools:lint.bzl%ruff
 build:lint --output_groups=+rules_lint_human
+
+test --test_output=errors
