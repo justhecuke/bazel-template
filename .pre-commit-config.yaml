@@ -32,3 +32,8 @@ repos:
         entry: python ./bin/ruff.py format --force-exclude --
         language: system
         types: [python]
+      - id: gofmt
+        name: gofmt
+        entry: python ./bin/gofmt.py
+        language: system
+        files: \.go$
