@@ -34,6 +34,10 @@ jobs:
       - name: Bootstrap prek and tools
         run: python setup.py
 
+      - name: Warm up Bazel toolchains and tools
+        run: |
+          bazel build //tools:ruff //tools:pyrefly //tools:buildifier
+
       # Run prek to check formatting, requirements, and lints.
       # Because the configuration uses local wrapper scripts,
       # it runs ruff and buildifier through our hermetic Bazel wrappers.
