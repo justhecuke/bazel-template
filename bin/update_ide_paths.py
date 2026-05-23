@@ -90,6 +90,16 @@ def main():
     except Exception as e:
         print(f"Warning: Could not update pyrightconfig.json: {e}")
 
+    # Write to pyrefly.toml (which is in .gitignore)
+    pyrefly_path = workspace_dir / "pyrefly.toml"
+    toml_paths = ",\n".join(f'    "{p}"' for p in sorted_paths)
+    pyrefly_content = f"search-path = [\n{toml_paths}\n]\ninfer-with-first-use = false\n"
+    try:
+        pyrefly_path.write_text(pyrefly_content, encoding="utf-8")
+        print(f"[OK] Updated {pyrefly_path.name} with {len(extra_paths)} external search paths.")
+    except Exception as e:
+        print(f"Warning: Could not update pyrefly.toml: {e}")
+
 
 if __name__ == "__main__":
     main()

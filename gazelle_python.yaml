@@ -16,10 +16,11 @@ manifest:
     markdown_it: markdown_it_py
     mdurl: mdurl
     pygments: pygments
+    pyrefly: pyrefly
     requests: requests
     rich: rich
     rich_rst: rich_rst
     urllib3: urllib3
   pip_repository:
     name: pip
-integrity: e4150fdffbbab202a19a4f2060d78f174ea508c6cfe9cc49cade2191d46318f9
+integrity: 5e5fd21811837c065c4e0f014243fdf09201cf94d1df1ff85bad22a0a02dc291

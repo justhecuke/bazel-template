@@ -1,3 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
 alias(
     name = "ruff",
     actual = "@ruff//:ruff",
@@ -14,4 +16,13 @@ alias(
     name = "buildozer",
     actual = "@buildifier_prebuilt//:buildozer",
     visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "pyrefly",
+    srcs = ["pyrefly.py"],
+    data = ["@pip//pyrefly:extracted_whl_files"],
+    main = "pyrefly.py",
+    visibility = ["//visibility:public"],
+    deps = ["@pip//pyrefly"],
 )

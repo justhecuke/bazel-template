@@ -24,3 +24,15 @@ py_test(
     srcs = ["calculator_test.py"],
     deps = [":calculator"],
 )
+
+py_test(
+    name = "typecheck",
+    srcs = ["typecheck_test.py"],
+    data = ["@pip//pyrefly:extracted_whl_files"],
+    main = "typecheck_test.py",
+    deps = [
+        ":calculator",
+        ":main",
+        "@pip//pyrefly",
+    ],
+)
