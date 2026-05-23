@@ -37,7 +37,6 @@ repos:
         entry: python ./bin/pyrefly.py check --
         language: system
         types: [python]
-        pass_filenames: false
       - id: gofmt
         name: gofmt
         entry: python ./bin/gofmt.py
