@@ -51,7 +51,7 @@ jobs:
         env:
           SKIP: update-ide-paths
         run: |
-          prek run --all-files --show-diff-on-failure
+          prek run --all-files --show-diff-on-failure --verbose
 
       # Run all bazel tests with linter aspect active to verify target lints and correctness
       - name: Run Bazel tests and linter aspect
