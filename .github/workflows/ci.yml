@@ -36,7 +36,7 @@ jobs:
 
       - name: Warm up Bazel toolchains and tools
         run: |
-          bazel build //tools:ruff //tools:pyrefly //tools:buildifier
+          bazel build //tools:ruff //tools:pyrefly //tools:buildifier @rules_go//go
 
       - name: Prepare prek hook environments
         env:
