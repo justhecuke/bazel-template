@@ -38,6 +38,12 @@ jobs:
         run: |
           bazel build //tools:ruff //tools:pyrefly //tools:buildifier
 
+      - name: Prepare prek hook environments
+        env:
+          SKIP: update-ide-paths
+        run: |
+          prek prepare-hooks
+
       # Run prek to check formatting, requirements, and lints.
       # Because the configuration uses local wrapper scripts,
       # it runs ruff and buildifier through our hermetic Bazel wrappers.
