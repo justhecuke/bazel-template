@@ -1,32 +1,34 @@
+from __future__ import annotations
+
 import unittest
 
 from py.calculator import evaluate_expression
 
 
 class TestCalculator(unittest.TestCase):
-    def test_basic_operations(self):
+    def test_basic_operations(self) -> None:
         self.assertEqual(evaluate_expression("2 + 2"), 4.0)
         self.assertEqual(evaluate_expression("5 - 3"), 2.0)
         self.assertEqual(evaluate_expression("4 * 3"), 12.0)
         self.assertEqual(evaluate_expression("10 / 2"), 5.0)
 
-    def test_operator_precedence(self):
+    def test_operator_precedence(self) -> None:
         self.assertEqual(evaluate_expression("2 + 3 * 4"), 14.0)
         self.assertEqual(evaluate_expression("(2 + 3) * 4"), 20.0)
 
-    def test_power_operations(self):
+    def test_power_operations(self) -> None:
         self.assertEqual(evaluate_expression("2 ** 3"), 8.0)
         self.assertEqual(evaluate_expression("2 ^ 3"), 8.0)
 
-    def test_unary_operations(self):
+    def test_unary_operations(self) -> None:
         self.assertEqual(evaluate_expression("-5 + 3"), -2.0)
         self.assertEqual(evaluate_expression("-(3 * 2)"), -6.0)
 
-    def test_invalid_syntax(self):
+    def test_invalid_syntax(self) -> None:
         with self.assertRaises(ValueError):
             evaluate_expression("2 + * 3")
 
-    def test_unsupported_operations(self):
+    def test_unsupported_operations(self) -> None:
         with self.assertRaises(ValueError):
             evaluate_expression("import os")
 

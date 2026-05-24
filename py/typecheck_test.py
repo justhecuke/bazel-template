@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import os
 import runpy
 import sys
 from pathlib import Path
 
 
-def setup_bin_path():
+def setup_bin_path() -> None:
     # Locate the runfiles directory of the Bazel test sandbox
     runfiles_dir = os.environ.get("RUNFILES_DIR")
     if runfiles_dir:
@@ -28,7 +30,7 @@ def setup_bin_path():
         os.environ["PATH"] = str(found_bin_dir.resolve()) + os.pathsep + os.environ.get("PATH", "")
 
 
-def generate_sandbox_config():
+def generate_sandbox_config() -> None:
     # Gather all import paths from sys.path
     search_paths = []
     for p in sys.path:
@@ -48,7 +50,7 @@ def generate_sandbox_config():
     print(f"Generated sandbox pyrefly.toml with {len(search_paths)} search paths.")
 
 
-def main():
+def main() -> None:
     setup_bin_path()
     generate_sandbox_config()
 

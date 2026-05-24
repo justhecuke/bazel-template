@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import os
 import sys
 from pathlib import Path
@@ -10,10 +12,10 @@ if "BUILD_WORKSPACE_DIRECTORY" not in os.environ:
 from bin.wrapper_utils import run_bazel_target
 
 
-def main():
+def main() -> None:
     run_bazel_target("//:requirements.update", extra_args=sys.argv[1:])
 
-    # Normalize requirements.txt to LF to prevent OS-specific line ending differences
+    # Normalize requirements.txt to LF to prevent OS-specific line endings
     # from altering the gazelle_python.yaml integrity hash.
     req_file = Path("requirements.txt")
     if req_file.exists():

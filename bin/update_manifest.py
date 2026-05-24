@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import os
 import sys
 from pathlib import Path
@@ -10,7 +12,7 @@ if "BUILD_WORKSPACE_DIRECTORY" not in os.environ:
 from bin.wrapper_utils import run_bazel_target
 
 
-def main():
+def main() -> None:
     run_bazel_target("//:gazelle_python_manifest_generator.update", extra_args=sys.argv[1:])
 
 

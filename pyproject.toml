@@ -3,6 +3,7 @@
 
 [tool.pyright]
 extends = "pyrightconfig.json"
+typeCheckingMode = "strict"
 
 [tool.ruff]
 # Enable the flake8-bugbear (B) rules.
