@@ -11,10 +11,10 @@ from bin.wrapper_utils import run_bazel_target
 
 def main() -> None:
     # Forward all command line arguments directly to //tools:staticcheck
-    # If no files/packages are specified, default to checking the whole repository (./...)
+    # If no files/packages are specified, default to checking the Go application packages (go/calculator/...)
     args = sys.argv[1:]
     if not args:
-        args = ["./..."]
+        args = ["go/calculator/..."]
 
     run_bazel_target(
         "//tools:staticcheck",
