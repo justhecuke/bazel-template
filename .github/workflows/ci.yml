@@ -36,7 +36,7 @@ jobs:
 
       - name: Warm up Bazel toolchains and tools
         run: |
-          bazel build //tools:ruff //tools:pyrefly //tools:buildifier @rules_go//go //:requirements.update
+          bazel build --config=ci //tools:ruff //tools:pyrefly //tools:buildifier @rules_go//go //:requirements.update
 
       - name: Prepare prek hook environments
         env:
@@ -56,4 +56,4 @@ jobs:
       # Run all bazel tests with linter aspect active to verify target lints and correctness
       - name: Run Bazel tests and linter aspect
         run: |
-          bazel test --config=lint //...
+          bazel test --config=ci --config=lint //...
