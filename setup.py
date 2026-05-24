@@ -260,6 +260,8 @@ def install_prek(force=False):  # noqa: C901
                         if member.name.endswith("prek") or member.name.split("/")[-1] == "prek":
                             member.name = os.path.basename(member.name)
                             f = tar.extractfile(member)
+                            if f is None:
+                                raise ValueError(f"Failed to extract {member.name} from archive")
                             with open(out_path, "wb") as out_f:
                                 shutil.copyfileobj(f, out_f)
                             break

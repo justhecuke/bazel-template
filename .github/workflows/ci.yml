@@ -34,14 +34,24 @@ jobs:
       - name: Bootstrap prek and tools
         run: python setup.py
 
+      - name: Warm up Bazel toolchains and tools
+        run: |
+          bazel build //tools:ruff //tools:pyrefly //tools:buildifier @rules_go//go //:requirements.update
+
+      - name: Prepare prek hook environments
+        env:
+          SKIP: update-ide-paths,update-requirements,buildifier,ruff-check,ruff-format,pyrefly,gofmt
+        run: |
+          prek prepare-hooks
+
       # Run prek to check formatting, requirements, and lints.
       # Because the configuration uses local wrapper scripts,
       # it runs ruff and buildifier through our hermetic Bazel wrappers.
       - name: Run prek hooks
         env:
-          SKIP: update-ide-paths
+          SKIP: update-ide-paths,update-requirements,buildifier,ruff-check,ruff-format,pyrefly,gofmt
         run: |
-          prek run --all-files --show-diff-on-failure
+          prek run --all-files --show-diff-on-failure --verbose
 
       # Run all bazel tests with linter aspect active to verify target lints and correctness
       - name: Run Bazel tests and linter aspect

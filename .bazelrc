@@ -3,6 +3,12 @@
 # Enable platform-specific config blocks (build:windows, build:linux, etc.)
 common --enable_platform_specific_config
 
+# Resource limits to prevent Out-Of-Memory (OOM) killer in resource-constrained environments (like CI)
+# To use: bazel build/test --config=ci ...
+build:ci --local_resources=ram=1536
+build:ci --local_resources=cpu=1
+build:ci --jobs=2
+
 # Windows-specific settings
 # Pass through essential Windows environment variables to build actions.
 # Without these, toolchains and subprocesses may fail to locate system resources.

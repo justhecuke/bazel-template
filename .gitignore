@@ -8,5 +8,6 @@ bazel-*/
 
 # keep-sorted start
 MODULE.bazel.lock
+pyrefly.toml
 pyrightconfig.json
 # keep-sorted end

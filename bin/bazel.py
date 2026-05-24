@@ -45,6 +45,11 @@ def _get_bazel_cmd(env):
 
     cmd = [bazel_exe] + sys.argv[1:]
 
+    # Auto-inject --config=ci in CI environments for execution commands
+    if len(sys.argv) > 1 and sys.argv[1] in ["build", "test", "run", "coverage"]:
+        if env.get("CI") == "true" and "--config=ci" not in sys.argv:
+            cmd.insert(2, "--config=ci")
+
     # On Windows, enable runfiles by default as many Python-based tools (like Gazelle) depend on them.
     if sys.platform == "win32" and len(sys.argv) > 1 and sys.argv[1] in ["run", "test", "build"]:
         if "--enable_runfiles" not in sys.argv:

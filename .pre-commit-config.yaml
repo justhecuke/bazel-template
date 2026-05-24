@@ -32,6 +32,11 @@ repos:
         entry: python ./bin/ruff.py format --force-exclude --
         language: system
         types: [python]
+      - id: pyrefly
+        name: pyrefly
+        entry: python ./bin/pyrefly.py check --
+        language: system
+        types: [python]
       - id: gofmt
         name: gofmt
         entry: python ./bin/gofmt.py
