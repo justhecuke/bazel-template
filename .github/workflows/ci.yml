@@ -40,7 +40,7 @@ jobs:
 
       - name: Prepare prek hook environments
         env:
-          SKIP: update-ide-paths,update-requirements,buildifier,ruff-check,ruff-format,pyrefly,gofmt
+          SKIP: update-ide-paths,update-requirements
         run: |
           prek prepare-hooks
 
@@ -49,7 +49,7 @@ jobs:
       # it runs ruff and buildifier through our hermetic Bazel wrappers.
       - name: Run prek hooks
         env:
-          SKIP: update-ide-paths,update-requirements,buildifier,ruff-check,ruff-format,pyrefly,gofmt
+          SKIP: update-ide-paths,update-requirements
         run: |
           prek run --all-files --show-diff-on-failure --verbose
 

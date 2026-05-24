@@ -37,8 +37,14 @@ repos:
         entry: python ./bin/pyrefly.py check --
         language: system
         types: [python]
-      - id: gofmt
-        name: gofmt
-        entry: python ./bin/gofmt.py
+      - id: goimports
+        name: goimports
+        entry: python ./bin/goimports.py
         language: system
         files: \.go$
+      - id: staticcheck
+        name: staticcheck
+        entry: python ./bin/staticcheck.py
+        language: system
+        files: \.go$
+        pass_filenames: false

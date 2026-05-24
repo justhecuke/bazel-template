@@ -42,4 +42,4 @@ def run_bazel_target(target: str, extra_args: list[str] | None = None, resolve_p
     if sys.platform != "win32":
         os.execvp(sys.executable, cmd)
     else:
-        sys.exit(subprocess.run(cmd).returncode)
+        sys.exit(subprocess.run(cmd, check=False).returncode)

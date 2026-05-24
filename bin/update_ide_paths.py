@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
+
+EXPECTED_SPLIT_PARTS = 2
 
 
 def toml_str(s: str) -> str:
@@ -47,7 +50,7 @@ def main() -> None:
         # Step 1: split on ' py_library ' to isolate the '<path>:<line>:<col>:' prefix.
         # This avoids any platform-specific colon counting.
         halves = line.split(" py_library ", 1)
-        if len(halves) < 2:
+        if len(halves) < EXPECTED_SPLIT_PARTS:
             continue
 
         # Step 2: strip the trailing ':' separator then rsplit to drop line+col numbers.
@@ -73,8 +76,6 @@ def main() -> None:
 
     # Write to pyrightconfig.json (which is in .gitignore)
     # This is critical for Pyrefly / Pyright support to avoid checked-in absolute paths.
-    import json
-
     workspace_dir = bin_dir.parent
     pyrightconfig_path = workspace_dir / "pyrightconfig.json"
     pyrightconfig_data = {}
