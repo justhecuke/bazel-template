@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import subprocess
 import sys
 from pathlib import Path
@@ -8,7 +10,7 @@ def toml_str(s: str) -> str:
     return f'"{s}"'
 
 
-def main():
+def main() -> None:
     # Use the local bazel wrapper
     bin_dir = Path(__file__).parent
     bazel_py = bin_dir / "bazel.py"

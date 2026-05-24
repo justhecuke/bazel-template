@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import os
 import pathlib
 import subprocess
 import sys
 
 
-def resolve_bazel_path():
+def resolve_bazel_path() -> str:
     """Locate the bazel.py wrapper script relative to the current script."""
     bin_dir = pathlib.Path(__file__).parent
     return str(bin_dir / "bazel.py")
 
 
-def run_bazel_target(target, extra_args=None, resolve_paths=True):
+def run_bazel_target(target: str, extra_args: list[str] | None = None, resolve_paths: bool = True) -> None:
     """
     Runs a Bazel target using the local bazel.py wrapper.
 

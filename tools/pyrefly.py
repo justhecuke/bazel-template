@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import os
 import runpy
 import sys
 from pathlib import Path
 
 
-def setup_bin_path():
+def setup_bin_path() -> None:
     # Locate the runfiles directory
     # Bazel sets RUNFILES_DIR or we can search relative to __file__
     runfiles_dir = os.environ.get("RUNFILES_DIR")
@@ -34,7 +36,7 @@ def setup_bin_path():
         os.environ["PATH"] = str(found_bin_dir.resolve()) + os.pathsep + os.environ.get("PATH", "")
 
 
-def change_to_workspace():
+def change_to_workspace() -> None:
     # When running under 'bazel run', Bazel sets BUILD_WORKSPACE_DIRECTORY to the actual host workspace path.
     # Changing the working directory ensures pyrefly runs relative to the actual workspace code, not the sandbox.
     workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY")

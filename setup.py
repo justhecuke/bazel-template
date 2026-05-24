@@ -4,6 +4,8 @@ Setup script to provision global system dependencies: bazelisk and mise.
 Cross-platform support for Windows, macOS, and Linux.
 """
 
+from __future__ import annotations
+
 import argparse
 import hashlib
 import json
@@ -47,7 +49,7 @@ SETUP_START_MARKER = "# <bazel-template-setup-start>"
 SETUP_END_MARKER = "# <bazel-template-setup-end>"
 
 
-def get_local_bin(os_name=None):
+def get_local_bin(os_name: str | None = None) -> str:
     """Returns the platform-appropriate binary install directory."""
     if os_name is None:
         os_name, _, _ = get_platform_info()
@@ -56,7 +58,7 @@ def get_local_bin(os_name=None):
     return os.path.join(os.path.expanduser("~"), ".local", "bin")
 
 
-def get_platform_info():
+def get_platform_info() -> tuple[str, str, str]:
     system = platform.system().lower()
     machine = platform.machine().lower()
 
@@ -80,11 +82,11 @@ def get_platform_info():
     return os_name, arch, ext
 
 
-def check_command(cmd):
+def check_command(cmd: str) -> bool:
     return shutil.which(cmd) is not None
 
 
-def verify_sha256(filepath, expected_hash):
+def verify_sha256(filepath: str, expected_hash: str) -> tuple[bool, str]:
     sha256_hash = hashlib.sha256()
     with open(filepath, "rb") as f:
         for byte_block in iter(lambda: f.read(4096), b""):
@@ -92,7 +94,7 @@ def verify_sha256(filepath, expected_hash):
     return sha256_hash.hexdigest() == expected_hash, sha256_hash.hexdigest()
 
 
-def install_bazelisk(force=False):
+def install_bazelisk(force: bool = False) -> None:
     existing = shutil.which("bazelisk")
     if existing and not force:
         print(f"[ok] Bazelisk is already installed at {existing}")
@@ -132,7 +134,7 @@ def install_bazelisk(force=False):
         sys.exit(1)
 
 
-def install_mise(force=False):  # noqa: C901
+def install_mise(force: bool = False) -> None:  # noqa: C901
     existing = shutil.which("mise")
     if existing and not force:
         print(f"[ok] Mise is already installed at {existing}")
@@ -202,7 +204,7 @@ def install_mise(force=False):  # noqa: C901
             sys.exit(1)
 
 
-def install_prek(force=False):  # noqa: C901
+def install_prek(force: bool = False) -> None:  # noqa: C901
     existing = shutil.which("prek")
     if existing and not force:
         print(f"[ok] Prek is already installed at {existing}")
@@ -283,7 +285,7 @@ def install_prek(force=False):  # noqa: C901
         print(f"Failed to run prek install: {e}")
 
 
-def configure_shell_profile(profile_path, local_bin):
+def configure_shell_profile(profile_path: str, local_bin: str) -> bool:
     """Injects mise activation into a specific shell profile or RC file.
     Detects shell type based on file extension or OS fallback.
     Returns True if the profile was modified."""
@@ -347,7 +349,7 @@ def configure_shell_profile(profile_path, local_bin):
         return False
 
 
-def ensure_windows_path(*paths):
+def ensure_windows_path(*paths: str) -> bool:
     """Automatically adds one or more directories to the Windows User PATH if not already present.
     Returns True if any modification was made."""
     modified = False
@@ -378,7 +380,7 @@ def ensure_windows_path(*paths):
     return modified
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Provision global system dependencies for bazel-template.")
     parser.add_argument("--force", action="store_true", help="Force reinstall of pinned versions.")
     parser.add_argument("--add-to-path", action="store_true", help="Automatically add install directory to User PATH.")

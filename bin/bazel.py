@@ -4,13 +4,15 @@ Wrapper to ensure Bazel runs inside an isolated Python venv.
 Prevents system-level Python packages from leaking into Bazel's bootstrap process.
 """
 
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess
 import sys
 
 
-def _bootstrap_venv(venv_dir):
+def _bootstrap_venv(venv_dir: str) -> None:
     """Ensure an isolated Python venv exists for Bazel bootstrap."""
     if not os.path.isdir(venv_dir):
         print("Bootstrapping isolated Python venv...")
@@ -18,7 +20,7 @@ def _bootstrap_venv(venv_dir):
         subprocess.run([python_exe, "-m", "venv", venv_dir], check=True)
 
 
-def _setup_windows_bash(env):
+def _setup_windows_bash(env: dict[str, str]) -> None:
     """Detect and set BAZEL_SH for Git Bash on Windows."""
     if "BAZEL_SH" in env:
         return
@@ -36,7 +38,7 @@ def _setup_windows_bash(env):
                 return
 
 
-def _get_bazel_cmd(env):
+def _get_bazel_cmd(env: dict[str, str]) -> tuple[str, list[str]]:
     """Locate bazelisk/bazel and build the command list."""
     bazel_exe = shutil.which("bazelisk", path=env["PATH"]) or shutil.which("bazel", path=env["PATH"])
     if not bazel_exe:
@@ -58,7 +60,7 @@ def _get_bazel_cmd(env):
     return bazel_exe, cmd
 
 
-def main():
+def main() -> None:
     venv_dir = ".venv"
     _bootstrap_venv(venv_dir)
 

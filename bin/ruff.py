@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import os
 import sys
 from pathlib import Path
@@ -10,7 +12,7 @@ if "BUILD_WORKSPACE_DIRECTORY" not in os.environ:
 from bin.wrapper_utils import run_bazel_target
 
 
-def main():
+def main() -> None:
     # Automatically locate and resolve the absolute path to pyproject.toml
     # to ensure the hermetic/sandboxed ruff execution in CI always uses our config.
     bin_dir = Path(__file__).parent.resolve()
