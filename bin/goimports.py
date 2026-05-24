@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
-# Only modify sys.path if we are running manually (not via bazel run/test)
-if "BUILD_WORKSPACE_DIRECTORY" not in os.environ:
-    sys.path.append(str(Path(__file__).parent.parent.resolve()))
+sys.path.append(str(Path(__file__).parent.parent.resolve()))
 
 from bin.wrapper_utils import run_bazel_target
 
@@ -26,14 +23,13 @@ def main() -> None:
         else:
             resolved_args.append(arg)
 
-    extra_args = ["run", "golang.org/x/tools/cmd/goimports@v0.30.0"]
+    extra_args = []
     if not has_w:
         extra_args.append("-w")
     extra_args.extend(resolved_args)
 
-    # Invoke @rules_go//go target with the goimports command and absolute file paths
-    # Set resolve_paths=False because we have already manually resolved them
-    run_bazel_target("@rules_go//go", extra_args=extra_args, resolve_paths=False)
+    # Invoke //tools:goimports target
+    run_bazel_target("//tools:goimports", extra_args=extra_args, resolve_paths=False)
 
 
 if __name__ == "__main__":
