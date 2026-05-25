@@ -51,13 +51,15 @@ jobs:
       # Run prek to check formatting, requirements, and lints.
       # Because the configuration uses local wrapper scripts,
       # it runs ruff and buildifier through our hermetic Bazel wrappers.
+      # pyrefly is skipped in CI because it is a memory-intensive type-checker
+      # that exceeds the RAM budget of the shared runner; run it locally instead.
       - name: Run prek hooks
         env:
-          SKIP: update-ide-paths,update-requirements
+          SKIP: update-ide-paths,update-requirements,pyrefly
         run: |
           prek run --all-files --show-diff-on-failure --verbose
 
       # Run all bazel tests with linter aspect active to verify target lints and correctness
       - name: Run Bazel tests and linter aspect
         run: |
-          bazel test --config=lint //...
+          bazel test --config=ci --config=lint //...
