@@ -38,6 +38,10 @@ jobs:
         run: |
           bazel build //tools:ruff //tools:pyrefly //tools:buildifier //tools:goimports //tools:staticcheck @rules_go//go //:requirements.update
 
+      - name: Generate IDE config (pyrefly.toml, pyrightconfig.json)
+        run: |
+          python bin/update_ide_paths.py
+
       - name: Prepare prek hook environments
         env:
           SKIP: update-ide-paths,update-requirements
