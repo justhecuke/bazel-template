@@ -22,29 +22,35 @@ repos:
         entry: python ./bin/buildifier.py -lint fix -mode fix --
         language: system
         files: (^|/)(BUILD\.bazel|MODULE\.bazel|.*\.bzl)$
+        require_serial: true
       - id: ruff-check
         name: ruff-check
         entry: python ./bin/ruff.py check --fix --force-exclude --
         language: system
         types: [python]
+        require_serial: true
       - id: ruff-format
         name: ruff-format
         entry: python ./bin/ruff.py format --force-exclude --
         language: system
         types: [python]
+        require_serial: true
       - id: pyrefly
         name: pyrefly
         entry: python ./bin/pyrefly.py check --
         language: system
         types: [python]
+        require_serial: true
       - id: goimports
         name: goimports
         entry: python ./bin/goimports.py
         language: system
         files: \.go$
+        require_serial: true
       - id: staticcheck
         name: staticcheck
         entry: python ./bin/staticcheck.py
         language: system
         files: \.go$
         pass_filenames: false
+        require_serial: true
