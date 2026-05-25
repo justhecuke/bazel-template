@@ -12,10 +12,10 @@ from bin.wrapper_utils import _clean_path_for_target
 
 def main() -> None:
     # Forward all command line arguments directly to staticcheck
-    # If no files/packages are specified, default to checking the Go application packages (go/calculator/...)
+    # If no files/packages are specified, default to checking all Go packages in the repository.
     args = sys.argv[1:]
     if not args:
-        args = ["./go/calculator/..."]
+        args = ["./..."]
 
     workspace_root = Path(__file__).parent.parent.resolve()
 
