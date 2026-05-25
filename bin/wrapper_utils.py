@@ -13,14 +13,8 @@ def resolve_bazel_path() -> str:
     return str(bin_dir / "bazel.py")
 
 
-def _clean_path_for_target() -> None:
-    if "PATH" not in os.environ:
-        return
-
-    # Filter out the local bin directory from the PATH of the spawned Bazel target.
-    # This prevents recursive wrapper execution (e.g. goimports invoking bin/go,
-    # which recursively calls Bazel and triggers lock errors).
-    path_parts = os.environ["PATH"].split(os.pathsep)
+def _filter_path_and_find_workspace(path_parts: list[str]) -> tuple[list[str], pathlib.Path | None]:
+    """Filters out the local wrapper bin directory and finds workspace root."""
     cleaned_parts = []
     workspace_root = None
     for part in path_parts:
@@ -34,15 +28,49 @@ def _clean_path_for_target() -> None:
         except Exception:
             pass
         cleaned_parts.append(part)
+    return cleaned_parts, workspace_root
 
-    # Prepend the hermetic Go binary path if it exists to allow Go tools (like goimports or staticcheck)
-    # to invoke the hermetic Go compiler without hitting recursive wrapper execution or missing-system-go errors.
+
+def _find_native_go_sdk_bin(workspace_root: pathlib.Path) -> pathlib.Path | None:
+    """Locates the native, un-wrapped Go SDK bin directory inside the runner runfiles."""
+    runner_dir = workspace_root / "bazel-bin" / "external" / "rules_go+" / "go" / "tools" / "go_bin_runner" / "bin"
+    if not runner_dir.exists():
+        return None
+
+    # Support both Windows and Unix runfiles directory layouts
+    for runfiles_name in ["go.exe.runfiles", "go.runfiles"]:
+        runfiles_dir = runner_dir / runfiles_name
+        if runfiles_dir.exists():
+            # Dynamically find the Go SDK subdirectory under runfiles
+            for path in runfiles_dir.iterdir():
+                if "go_sdk" in path.name and (path / "bin").exists():
+                    return path / "bin"
+    return None
+
+
+def _clean_path_for_target() -> None:
+    if "PATH" not in os.environ:
+        return
+
+    # Filter out the local bin directory from the PATH of the spawned Bazel target.
+    # This prevents recursive wrapper execution (e.g. goimports invoking bin/go,
+    # which recursively calls Bazel and triggers lock errors).
+    path_parts = os.environ["PATH"].split(os.pathsep)
+    cleaned_parts, workspace_root = _filter_path_and_find_workspace(path_parts)
+
+    # Locate and prepend the native hermetic Go SDK binary directory (inside go_bin_runner's runfiles)
+    # to the PATH of the spawned target. This completely prevents recursive Bazel executions.
     if workspace_root:
-        hermetic_go_dir = (
-            workspace_root / "bazel-bin" / "external" / "rules_go+" / "go" / "tools" / "go_bin_runner" / "bin"
-        )
-        if hermetic_go_dir.exists():
-            cleaned_parts.insert(0, str(hermetic_go_dir.resolve()))
+        go_sdk_bin = _find_native_go_sdk_bin(workspace_root)
+
+        # Fall back to the runner_dir if the native Go SDK has not been extracted/built yet
+        if go_sdk_bin:
+            go_path = go_sdk_bin
+        else:
+            go_path = workspace_root / "bazel-bin" / "external" / "rules_go+" / "go" / "tools" / "go_bin_runner" / "bin"
+
+        if go_path.exists():
+            cleaned_parts.insert(0, str(go_path.resolve()))
 
     os.environ["PATH"] = os.pathsep.join(cleaned_parts)
 
