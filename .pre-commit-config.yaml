@@ -43,7 +43,7 @@ repos:
         require_serial: true
       - id: goimports
         name: goimports
-        entry: python ./bin/goimports.py
+        entry: python ./bin/goimports.py -w --
         language: system
         files: \.go$
         require_serial: true
