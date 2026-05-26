@@ -20,6 +20,7 @@ description: Finalize a GitHub PR from Local Changes
 1. Push local branch.
    - If there is no PR for the branch, create a PR and create a title and description according to the contents of the PR.
 2. Track CI for the PR with at least 1 minute between checks.
+   - Every time a check return a non-finished status, increase the polling period by at least double.
    - If all checks pass, there is no work to be done and you can finish.
    - If there is at least one failure, continue to step (3).
 3. Analyze failure, determine a fix, perform the fix.
