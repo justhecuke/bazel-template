@@ -10,14 +10,15 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 
-def _bootstrap_venv(venv_dir: str) -> None:
+def _bootstrap_venv(venv_dir: Path) -> None:
     """Ensure an isolated Python venv exists for Bazel bootstrap."""
-    if not os.path.isdir(venv_dir):
+    if not venv_dir.is_dir():
         print("Bootstrapping isolated Python venv...")
         python_exe = "python3" if shutil.which("python3") else "python"
-        subprocess.run([python_exe, "-m", "venv", venv_dir], check=True)
+        subprocess.run([python_exe, "-m", "venv", str(venv_dir)], check=True)
 
 
 def _setup_windows_bash(env: dict[str, str]) -> None:
@@ -31,7 +32,7 @@ def _setup_windows_bash(env: dict[str, str]) -> None:
         shutil.which("bash"),
     ]
     for bash_path in potential_bashes:
-        if bash_path and os.path.exists(bash_path):
+        if bash_path and Path(bash_path).exists():
             # Avoid the broken WSL shim in System32
             if "System32" not in bash_path:
                 env["BAZEL_SH"] = bash_path
@@ -45,7 +46,7 @@ def _get_bazel_cmd(env: dict[str, str]) -> tuple[str, list[str]]:
         print("Error: Could not find bazelisk or bazel in PATH.")
         sys.exit(1)
 
-    cmd = [bazel_exe] + sys.argv[1:]
+    cmd = [bazel_exe, *sys.argv[1:]]
 
     # Auto-inject --config=ci in CI environments for execution commands
     if len(sys.argv) > 1 and sys.argv[1] in ["build", "test", "run", "coverage"]:
@@ -61,18 +62,18 @@ def _get_bazel_cmd(env: dict[str, str]) -> tuple[str, list[str]]:
 
 
 def main() -> None:
-    venv_dir = ".venv"
+    venv_dir = Path(".venv")
     _bootstrap_venv(venv_dir)
 
     # Activate venv environment in our current process copy
     env = os.environ.copy()
     if sys.platform == "win32":
-        venv_bin = os.path.join(venv_dir, "Scripts")
+        venv_bin = venv_dir / "Scripts"
     else:
-        venv_bin = os.path.join(venv_dir, "bin")
+        venv_bin = venv_dir / "bin"
 
-    env["VIRTUAL_ENV"] = os.path.abspath(venv_dir)
-    env["PATH"] = f"{os.path.abspath(venv_bin)}{os.pathsep}{env.get('PATH', '')}"
+    env["VIRTUAL_ENV"] = str(venv_dir.resolve())
+    env["PATH"] = f"{venv_bin.resolve()}{os.pathsep}{env.get('PATH', '')}"
 
     if sys.platform == "win32":
         _setup_windows_bash(env)
@@ -85,7 +86,7 @@ def main() -> None:
     if sys.platform != "win32":
         os.execvpe(bazel_exe, cmd, env)
     else:
-        sys.exit(subprocess.run(cmd, env=env).returncode)
+        sys.exit(subprocess.run(cmd, env=env, check=False).returncode)
 
 
 if __name__ == "__main__":

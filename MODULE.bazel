@@ -39,3 +39,4 @@ go_sdk.nogo(
 
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
+use_repo(go_deps, "co_honnef_go_tools", "org_golang_x_tools")

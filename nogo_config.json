@@ -1,0 +1,8 @@
+{
+  "shadow": {
+    "enabled": true
+  },
+  "nilness": {
+    "enabled": true
+  }
+}

@@ -36,20 +36,26 @@ jobs:
 
       - name: Warm up Bazel toolchains and tools
         run: |
-          bazel build //tools:ruff //tools:pyrefly //tools:buildifier @rules_go//go //:requirements.update
+          bazel build //tools:ruff //tools:pyrefly //tools:buildifier //tools:goimports //tools:staticcheck @rules_go//go //:requirements.update
+
+      - name: Generate IDE config (pyrefly.toml, pyrightconfig.json)
+        run: |
+          python bin/update_ide_paths.py
 
       - name: Prepare prek hook environments
         env:
-          SKIP: update-ide-paths,update-requirements,buildifier,ruff-check,ruff-format,pyrefly,gofmt
+          SKIP: update-ide-paths,update-requirements
         run: |
           prek prepare-hooks
 
       # Run prek to check formatting, requirements, and lints.
       # Because the configuration uses local wrapper scripts,
       # it runs ruff and buildifier through our hermetic Bazel wrappers.
+      # pyrefly is skipped in CI because it is a memory-intensive type-checker
+      # that exceeds the RAM budget of the shared runner; run it locally instead.
       - name: Run prek hooks
         env:
-          SKIP: update-ide-paths,update-requirements,buildifier,ruff-check,ruff-format,pyrefly,gofmt
+          SKIP: update-ide-paths,update-requirements,pyrefly
         run: |
           prek run --all-files --show-diff-on-failure --verbose
 

@@ -26,3 +26,15 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = ["@pip//pyrefly"],
 )
+
+alias(
+    name = "goimports",
+    actual = "@org_golang_x_tools//cmd/goimports:goimports",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "staticcheck",
+    actual = "@co_honnef_go_tools//cmd/staticcheck:staticcheck",
+    visibility = ["//visibility:public"],
+)
