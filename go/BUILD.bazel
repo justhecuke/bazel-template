@@ -1,5 +1,8 @@
-filegroup(
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
     name = "tools",
     srcs = ["tools.go"],
+    importpath = "bazel_template/go",
     visibility = ["//visibility:public"],
 )
