@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""Buildifier CLI wrapper for Bazel build file linting and formatting.
+
+Usage Examples:
+  Standalone:
+    bin/buildifier -mode=check BUILD.bazel
+
+  Via Bazel:
+    bazel run //tools:buildifier -- -mode=check BUILD.bazel
+"""
+
 from __future__ import annotations
 
 import os

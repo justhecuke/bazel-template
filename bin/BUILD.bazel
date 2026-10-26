@@ -1,0 +1,11 @@
+filegroup(
+    name = "bin_scripts",
+    srcs = glob(
+        ["*"],
+        exclude = [
+            "BUILD.bazel",
+            "README.md",
+        ],
+    ),
+    visibility = ["//visibility:public"],
+)

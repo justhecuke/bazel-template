@@ -20,7 +20,7 @@ This repository adheres to a strict philosophy of **Bazel-driven hermeticity**. 
 ## 1. Absolute Hermeticity
 - Everything must be provisioned via Bazel (dependencies, tooling, formatting, execution).
 - Do not use global package managers (`npm -g`, `pip install --global`, `apt-get`, `brew`, `choco`, etc.) to install any tools.
-- Avoid relying on system dependencies if a Bazel-managed hermetic toolchain or dependency exists.
+- Do not use system dependencies if a Bazel-managed hermetic toolchain or dependency exists.
 - The repository must be entirely self-contained.
 
 ## 2. Tool Provisioning & Wrapper Scripts

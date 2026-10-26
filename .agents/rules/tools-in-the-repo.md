@@ -8,18 +8,22 @@ trigger: always_on
 ## Bazel
 
 The primary build tool the entire repository is built around.
+ALWAYS invoke as `bazel`
 
 ## Buildifier
 
 Standard Bazel lint/format tool.
+ALWAYS invoke as `buildifier`
 
 ## Buildozer
 
 Standard Bazel BUILD manipulation tool.
+ALWAYS invoke as `buildozer`
 
 ## Gazelle
 
 Standard Bazel BUILD auto-generation tool.
+ALWAYS invoke as `gazelle`
 
 ## MISE
 
@@ -29,15 +33,18 @@ ONLY used to set up PATH and such so we can use bin/ wrappers.
 ## Prek
 
 A better version of pre-commit which has poor support and slow updates.
+ALWAYS invoke at `prek`
 
 ## Pyrefly
 
 The default provided by Antigravity.
 Should work better than pyright/pylance.
+ALWAYS invoke at `pyrefly`
 
 ## Ruff
 
 Linter for Python.
 A de facto standard with possibility to extend.
+ALWAYS invoke as `ruff`
 
 // keep-sorted end

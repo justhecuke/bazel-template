@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+"""Shared execution helpers for Bazel CLI tool wrappers in bin/.
+
+Provides `run_bazel_target()` to execute Bazel targets cleanly and hermetically
+through `bin/bazel.py`.
+
+Usage Examples:
+  Within wrapper scripts:
+    from bin.wrapper_utils import run_bazel_target
+
+    run_bazel_target("//tools:ruff", extra_args=sys.argv[1:])
+"""
+
 from __future__ import annotations
 
 import os

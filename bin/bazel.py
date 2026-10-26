@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""
-Wrapper to ensure Bazel runs inside an isolated Python venv.
-Prevents system-level Python packages from leaking into Bazel's bootstrap process.
+"""Bazel CLI wrapper with Python bootstrap isolation.
+
+Runs Bazel inside an isolated root .venv to prevent host Python packages
+from leaking into rules_python.
+
+Usage Examples:
+  bin/bazel test //...
 """
 
 from __future__ import annotations
@@ -62,7 +66,19 @@ def _get_bazel_cmd(env: dict[str, str]) -> tuple[str, list[str]]:
 
 
 def main() -> None:
-    venv_dir = Path(".venv")
+    workspace_root = Path(__file__).parent.parent.resolve()
+
+    # Prevent "bazel should not be called from a bazel output directory" when tools
+    # like goimports run inside bazel-out and invoke nested wrapper commands (e.g. go).
+    workspace_env = os.environ.get("BUILD_WORKSPACE_DIRECTORY") or os.environ.get("BUILD_WORKING_DIRECTORY")
+    if workspace_env:
+        os.chdir(workspace_env)
+    else:
+        cwd_str = str(Path.cwd()).replace("\\", "/")
+        if "bazel-out" in cwd_str or "execroot" in cwd_str:
+            os.chdir(workspace_root)
+
+    venv_dir = workspace_root / ".venv"
     _bootstrap_venv(venv_dir)
 
     # Activate venv environment in our current process copy

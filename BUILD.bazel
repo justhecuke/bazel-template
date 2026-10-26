@@ -46,7 +46,10 @@ compile_pip_requirements(
     requirements_txt = "requirements.txt",
 )
 
-exports_files(["pyproject.toml"])
+exports_files([
+    ".mise.toml",
+    "pyproject.toml",
+])
 
 nogo(
     name = "nogo",
