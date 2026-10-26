@@ -2,11 +2,7 @@
 """Hermetic Go CLI wrapper delegating to Bazel's rules_go toolchain.
 
 Usage Examples:
-  Standalone:
-    bin/go test ./...
-
-  Via Bazel:
-    bazel run @rules_go//go -- test ./...
+  go test ./...
 """
 
 from __future__ import annotations

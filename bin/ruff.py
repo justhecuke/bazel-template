@@ -2,11 +2,7 @@
 """Hermetic Ruff CLI wrapper for Python linting and formatting.
 
 Usage Examples:
-  Standalone:
-    bin/ruff check -- py/
-
-  Via Bazel:
-    bazel run //tools:ruff -- check py/
+  ruff check -- py/
 """
 
 from __future__ import annotations

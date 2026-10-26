@@ -2,11 +2,7 @@
 """Hermetic staticcheck CLI wrapper for Go advanced static analysis.
 
 Usage Examples:
-  Standalone:
-    bin/staticcheck ./...
-
-  Via Bazel:
-    bazel run //tools:staticcheck -- ./...
+  staticcheck ./...
 """
 
 from __future__ import annotations

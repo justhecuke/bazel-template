@@ -11,7 +11,7 @@ To provide a consistent cross-platform developer experience while maintaining he
 2. **`<tool>.cmd` (Windows CMD Launcher)**:
    A batch script (`@echo off` / `python "%~dp0<tool>.py" %*`) enabling execution via Windows `PATH` / `PATHEXT`.
 3. **`<tool>.py` (Cross-Platform Python Implementation)**:
-   The actual tool logic delegating hermetically to Bazel targets via `bin/wrapper_utils.py` (`run_bazel_target`) or standalone execution.
+   The actual tool logic delegating hermetically to Bazel targets via `wrapper_utils.py` (`run_bazel_target`) or standalone execution.
 
 ## Tool Roster
 

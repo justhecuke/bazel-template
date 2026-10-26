@@ -4,11 +4,7 @@
 Regenerates the `gazelle_python.yaml` manifest containing package module mappings.
 
 Usage Examples:
-  Standalone:
-    bin/update_manifest
-
-  Via Bazel:
-    bazel run //:gazelle_python_manifest_generator.update
+  update_manifest
 """
 
 from __future__ import annotations

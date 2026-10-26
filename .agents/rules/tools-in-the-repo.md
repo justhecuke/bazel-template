@@ -4,6 +4,8 @@ trigger: always_on
 
 # List of Tools to use in the Repository
 
+> **Important**: Never invoke, document, or reference tools with the `bin/` path prefix (e.g. `bin/bazel`, `bin/ruff`). All tools are placed on the `PATH` by mise; always invoke them by plain name.
+
 // keep-sorted start block=yes case=no group_start_regex=# newline_separated=yes
 ## Bazel
 

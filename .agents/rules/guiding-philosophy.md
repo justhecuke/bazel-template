@@ -27,6 +27,7 @@ This repository adheres to a strict philosophy of **Bazel-driven hermeticity**. 
 - **Mise (`.mise.toml`) is ONLY used to set the `PATH`** (specifically appending `./bin` to the PATH). It must never be used to provision tools via the `[tools]` block.
 - Any CLI tools (like `buildifier`, `buildozer`, Python formatters, linters) should be added as Bazel dependencies (e.g., `buildifier_prebuilt` in `MODULE.bazel`).
 - To make these tools easily accessible, create wrapper scripts in the `bin/` directory. These wrappers should simply run the tool via Bazel, e.g., `bazel run //tools:<target> -- "$@"`.
+- **Never invoke or document tools with the `bin/` prefix**: Because `mise` prepends `./bin` to `PATH`, all wrapper tools must ALWAYS be invoked, documented, and referred to by their bare command names (e.g., `bazel`, `buildifier`, `ruff`, `update_ide_paths`), NEVER as `bin/<tool>` or `python bin/<tool>.py`.
 
 ## 3. Python Bootstrap Isolation
 - Bazel's `rules_python` relies on a system Python for its initial bootstrap phase. To prevent global system Python packages from leaking into Bazel and breaking hermeticity, Bazel must always run inside a clean, isolated Python virtual environment.

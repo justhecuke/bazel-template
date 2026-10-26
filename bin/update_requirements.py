@@ -5,11 +5,7 @@ Compiles dependencies from `requirements.in` into `requirements.txt` via rules_p
 and normalizes line endings to LF.
 
 Usage Examples:
-  Standalone:
-    bin/update_requirements
-
-  Via Bazel:
-    bazel run //:requirements.update
+  update_requirements
 """
 
 from __future__ import annotations

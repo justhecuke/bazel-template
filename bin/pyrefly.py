@@ -2,11 +2,7 @@
 """Hermetic Pyrefly CLI wrapper for Python static type-checking.
 
 Usage Examples:
-  Standalone:
-    bin/pyrefly check -- py/calculator.py
-
-  Via Bazel:
-    bazel run //tools:pyrefly -- check py/calculator.py
+  pyrefly check -- py/calculator.py
 """
 
 from __future__ import annotations

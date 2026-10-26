@@ -2,11 +2,7 @@
 """Gazelle CLI wrapper for automatic BUILD file generation.
 
 Usage Examples:
-  Standalone:
-    bin/gazelle
-
-  Via Bazel:
-    bazel run //:gazelle
+  gazelle
 """
 
 from __future__ import annotations

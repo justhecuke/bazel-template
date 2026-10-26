@@ -5,7 +5,7 @@ Runs Bazel inside an isolated root .venv to prevent host Python packages
 from leaking into rules_python.
 
 Usage Examples:
-  bin/bazel test //...
+  bazel test //...
 """
 
 from __future__ import annotations

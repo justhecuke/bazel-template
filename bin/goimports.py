@@ -2,11 +2,7 @@
 """Hermetic goimports CLI wrapper for Go source formatting and import management.
 
 Usage Examples:
-  Standalone:
-    bin/goimports -w -- go/calculator/main.go
-
-  Via Bazel:
-    bazel run //tools:goimports -- -w -- go/calculator/main.go
+  goimports -w -- go/calculator/main.go
 """
 
 from __future__ import annotations

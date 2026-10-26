@@ -5,7 +5,7 @@ Queries Bazel for external pip dependencies and generates `pyrefly.toml` and
 `pyrightconfig.json` with external library paths.
 
 Usage Examples:
-  bin/update_ide_paths
+  update_ide_paths
 """
 
 from __future__ import annotations

@@ -252,6 +252,28 @@ class WrapperArchitectureTest(unittest.TestCase):
                     f"{tool}.cmd must not contain unquoted '{unquoted_pattern}'",
                 )
 
+    def test_docstrings_use_bare_command_names_not_bin_paths(self) -> None:
+        """Usage examples in bin/*.py docstrings must use bare command names, not 'bin/<tool>'.
+
+        Since .mise.toml places ./bin on PATH and cross-platform launchers exist,
+        users and scripts should never be instructed to invoke 'bin/<tool>'.
+        """
+        all_tool_names = [f.stem for f in self.bin_py_files if f.name != "wrapper_utils.py"]
+        for py_file in self.bin_py_files:
+            with self.subTest(file=py_file.name):
+                content = py_file.read_text(encoding="utf-8")
+                module = ast.parse(content, filename=str(py_file))
+                docstring = ast.get_docstring(module)
+                self.assertIsNotNone(docstring, f"{py_file.name} must have a module docstring.")
+                assert docstring is not None
+                for tool in all_tool_names:
+                    self.assertNotIn(
+                        f"bin/{tool}",
+                        docstring,
+                        f"{py_file.name} docstring must not suggest calling 'bin/{tool}'. "
+                        f"Use bare tool name '{tool}' instead since ./bin is on PATH.",
+                    )
+
 
 class LauncherExecutionBehaviorTest(unittest.TestCase):
     """Execution tests verifying launcher behavior, argument forwarding, and environment preconditions."""

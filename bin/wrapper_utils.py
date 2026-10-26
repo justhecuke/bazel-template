@@ -2,7 +2,7 @@
 """Shared execution helpers for Bazel CLI tool wrappers in bin/.
 
 Provides `run_bazel_target()` to execute Bazel targets cleanly and hermetically
-through `bin/bazel.py`.
+through the root `bazel` wrapper.
 
 Usage Examples:
   Within wrapper scripts:
