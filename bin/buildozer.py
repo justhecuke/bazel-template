@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""Buildozer CLI wrapper for programmatically refactoring Bazel build files.
+
+Usage Examples:
+  buildozer 'print deps' //py:main
+"""
+
 from __future__ import annotations
 
 import os

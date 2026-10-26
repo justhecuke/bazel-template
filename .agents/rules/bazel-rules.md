@@ -22,9 +22,9 @@ One target per source file.
 ### CC
 
 Source files will be grouped into `.cc`, `.hh`, and `.inl` files sharing the same stem.
-`something.cc`, `something.hh`, `something.inl` will be in the same `someting` target.
+`something.cc`, `something.hh`, `something.inl` will be in the same `something` target.
 
-If any of these extensions are missing they will simply be elided from the target.
+If any of these extensions are missing they will be elided from the target.
 
 ## Target Names the same as the Source File
 

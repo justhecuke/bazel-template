@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""Gazelle CLI wrapper for automatic BUILD file generation.
+
+Usage Examples:
+  gazelle
+"""
+
 from __future__ import annotations
 
 import os

@@ -1,1 +1,3 @@
-@python %~dp0\gazelle.py %*
+@echo off
+python "%~dp0gazelle.py" %*
+

@@ -24,3 +24,25 @@ py_test(
     srcs = ["calculator_test.py"],
     deps = [":calculator"],
 )
+
+# gazelle:exclude testdata
+
+filegroup(
+    name = "testdata",
+    srcs = glob(["testdata/*"]),
+)
+
+py_test(
+    name = "mise_test",
+    srcs = ["mise_test.py"],
+    data = ["//:.mise.toml"],
+)
+
+py_test(
+    name = "wrappers_test",
+    srcs = ["wrappers_test.py"],
+    data = [
+        ":testdata",
+        "//bin:bin_scripts",
+    ],
+)
