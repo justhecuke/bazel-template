@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+CACHED_GH="$HOME/.cache/bazel_template/gh/v2.103.0/gh"
+if [ -x "$CACHED_GH" ]; then
+    exec "$CACHED_GH" "$@"
+fi
+exec python3 "$(dirname "$0")/gh.py" "$@"
