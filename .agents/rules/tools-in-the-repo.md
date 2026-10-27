@@ -27,6 +27,10 @@ ALWAYS invoke as `buildozer`
 Standard Bazel BUILD auto-generation tool.
 ALWAYS invoke as `gazelle`
 
+## GitHub CLI
+
+Official GitHub CLI tool (`gh`) for repository and PR management.
+
 ## MISE
 
 Bootstrap tool to help get us started.
