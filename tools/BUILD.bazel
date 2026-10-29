@@ -38,3 +38,15 @@ alias(
     actual = "@co_honnef_go_tools//cmd/staticcheck:staticcheck",
     visibility = ["//visibility:public"],
 )
+
+alias(
+    name = "rustfmt",
+    actual = "@rules_rust//tools/upstream_wrapper:rustfmt",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "cargo",
+    actual = "@rules_rust//tools/upstream_wrapper:cargo",
+    visibility = ["//visibility:public"],
+)

@@ -145,11 +145,14 @@ class WrapperArchitectureTest(unittest.TestCase):
         expected_delegating_wrappers = {
             "buildifier.py",
             "buildozer.py",
+            "cargo.py",
+            "clippy.py",
             "gazelle.py",
             "go.py",
             "goimports.py",
             "pyrefly.py",
             "ruff.py",
+            "rustfmt.py",
             "staticcheck.py",
             "update_manifest.py",
         }

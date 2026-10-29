@@ -22,6 +22,16 @@ ALWAYS invoke as `buildifier`
 Standard Bazel BUILD manipulation tool.
 ALWAYS invoke as `buildozer`
 
+## Cargo
+
+Standard Rust package manager and build tool provided by the hermetic `rules_rust` toolchain.
+ALWAYS invoke as `cargo`
+
+## Clippy
+
+Standard Rust linter and static analyzer provided by the hermetic `rules_rust` toolchain.
+ALWAYS invoke as `clippy`
+
 ## Gazelle
 
 Standard Bazel BUILD auto-generation tool.
@@ -52,5 +62,10 @@ ALWAYS invoke at `pyrefly`
 Linter for Python.
 A de facto standard with possibility to extend.
 ALWAYS invoke as `ruff`
+
+## Rustfmt
+
+Standard Rust code formatter provided by the hermetic `rules_rust` toolchain.
+ALWAYS invoke as `rustfmt`
 
 // keep-sorted end

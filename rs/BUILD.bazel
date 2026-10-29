@@ -1,0 +1,23 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
+
+rust_library(
+    name = "calculator",
+    srcs = ["calculator.rs"],
+    edition = "2021",
+    visibility = ["//:__subpackages__"],
+)
+
+rust_binary(
+    name = "main",
+    srcs = ["main.rs"],
+    edition = "2021",
+    visibility = ["//:__subpackages__"],
+    deps = [":calculator"],
+)
+
+rust_test(
+    name = "calculator_test",
+    srcs = ["calculator_test.rs"],
+    edition = "2021",
+    deps = [":calculator"],
+)

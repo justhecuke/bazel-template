@@ -26,9 +26,13 @@ build:windows --nolegacy_external_runfiles
 # bootstrap on Windows, as the latter requires symlink privileges (WinError 1314).
 build:windows --@rules_python//python/config_settings:bootstrap_impl=script
 
+# Link Rust targets on Windows using the bundled rust-lld linker from the
+# hermetic x86_64-pc-windows-gnu toolchain instead of the C++ toolchain wrapper.
+build:windows --@rules_rust//rust/settings:toolchain_linker_preference=rust
+
 # Linting settings
 # To run linting: bazel build --config=lint //...
-build:lint --aspects //tools:lint.bzl%ruff
-build:lint --output_groups=+rules_lint_human
+build:lint --aspects=//tools:lint.bzl%ruff,@rules_rust//rust:defs.bzl%rust_clippy_aspect,@rules_rust//rust:defs.bzl%rustfmt_aspect
+build:lint --output_groups=+rules_lint_human,+clippy_checks,+rustfmt_checks
 
 test --test_output=errors

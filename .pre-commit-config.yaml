@@ -54,3 +54,16 @@ repos:
         files: \.go$
         pass_filenames: false
         require_serial: true
+      - id: rustfmt
+        name: rustfmt
+        entry: python ./bin/rustfmt.py --edition 2021 --
+        language: system
+        files: \.rs$
+        require_serial: true
+      - id: clippy
+        name: clippy
+        entry: python ./bin/clippy.py
+        language: system
+        files: \.rs$
+        pass_filenames: false
+        require_serial: true

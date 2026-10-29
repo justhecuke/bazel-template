@@ -19,27 +19,39 @@ import subprocess
 import sys
 
 
-def run_bazel_target(target: str, extra_args: list[str] | None = None, resolve_paths: bool = True) -> None:
+def run_bazel_target(
+    target: str,
+    extra_args: list[str] | None = None,
+    resolve_paths: bool = True,
+    command: str = "run",
+) -> None:
     """Run a Bazel target via the local bazel.py wrapper.
 
     Args:
-        target: The Bazel target to run (e.g. //tools:ruff).
+        target: The Bazel target or target pattern (e.g. //tools:ruff or //...).
         extra_args: Additional arguments forwarded after `--` to the target.
         resolve_paths: If True, any file arguments following a `--` separator
             are resolved to absolute paths. This is needed for tools like ruff
             that are invoked by prek with workspace-relative file paths.
+        command: Bazel command to invoke ('run' or 'build'). Defaults to 'run'.
     """
     bin_dir = pathlib.Path(__file__).parent
     bazel_py = str(bin_dir / "bazel.py")
-    cmd = [sys.executable, bazel_py, "run", target, "--"]
 
-    if extra_args:
-        if resolve_paths and "--" in extra_args:
-            sep_idx = extra_args.index("--")
-            cmd.extend(extra_args[: sep_idx + 1])
-            cmd.extend(str(pathlib.Path(f).resolve()) for f in extra_args[sep_idx + 1 :])
-        else:
+    if command == "run":
+        cmd = [sys.executable, bazel_py, "run", target, "--"]
+        if extra_args:
+            if resolve_paths and "--" in extra_args:
+                sep_idx = extra_args.index("--")
+                cmd.extend(extra_args[: sep_idx + 1])
+                cmd.extend(str(pathlib.Path(f).resolve()) for f in extra_args[sep_idx + 1 :])
+            else:
+                cmd.extend(extra_args)
+    else:
+        cmd = [sys.executable, bazel_py, command]
+        if extra_args:
             cmd.extend(extra_args)
+        cmd.append(target)
 
     if sys.platform != "win32":
         os.execvp(sys.executable, cmd)

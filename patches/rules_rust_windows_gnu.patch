@@ -1,0 +1,18 @@
+--- a/rust/private/repository_utils.bzl
++++ b/rust/private/repository_utils.bzl
+@@ -56,6 +56,7 @@ filegroup(
+         [
+             "bin/*{dylib_ext}",
+             "lib/*{dylib_ext}*",
++            "lib/rustlib/{target_triple}/bin/*{dylib_ext}",
+             "lib/rustlib/{target_triple}/codegen-backends/*{dylib_ext}",
+             "lib/rustlib/{target_triple}/lib/*{dylib_ext}*",
+             "lib/rustlib/{target_triple}/lib/*.rmeta",
+@@ -329,6 +330,7 @@ rust_stdlib_filegroup(
+             "lib/rustlib/{target_triple}/lib/*.rmeta",
+             "lib/rustlib/{target_triple}/lib/*{dylib_ext}*",
+             "lib/rustlib/{target_triple}/lib/*{staticlib_ext}",
++            "lib/rustlib/{target_triple}/lib/*.o",
+             "lib/rustlib/{target_triple}/lib/self-contained/**",
+         ],
+         # Some patterns (e.g. `lib/*.a`) don't match anything, see https://github.com/bazelbuild/rules_rust/pull/245

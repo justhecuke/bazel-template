@@ -71,6 +71,11 @@ To run the Python template test:
 bazel run //py:main
 ```
 
+To run the Rust calculator example:
+```shell
+bazel run //rs:main -- calc "2 + 3 * 4"
+```
+
 To format Bazel files:
 ```shell
 buildifier BUILD.bazel
