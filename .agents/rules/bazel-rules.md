@@ -19,6 +19,10 @@ One target per source file.
 
 One target per source file.
 
+### Rust
+
+One target per source file.
+
 ### CC
 
 Source files will be grouped into `.cc`, `.hh`, and `.inl` files sharing the same stem.

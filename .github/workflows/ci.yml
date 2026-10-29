@@ -36,7 +36,7 @@ jobs:
 
       - name: Warm up Bazel toolchains and tools
         run: |
-          bazel build //tools:ruff //tools:pyrefly //tools:buildifier //tools:goimports //tools:staticcheck @rules_go//go //:requirements.update
+          bazel build //tools:ruff //tools:pyrefly //tools:buildifier //tools:goimports //tools:staticcheck //tools:rustfmt //tools:cargo @rules_go//go //:requirements.update
 
       - name: Generate IDE config (pyrefly.toml, pyrightconfig.json)
         run: |

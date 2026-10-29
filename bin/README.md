@@ -18,11 +18,14 @@ To provide a consistent cross-platform developer experience while maintaining he
 - `bazel`: Root wrapper bootstrapping isolated `.venv` before running Bazelisk/Bazel.
 - `buildifier`: Linting and formatting for Bazel build files.
 - `buildozer`: Batch edits for Bazel build files.
+- `cargo`: Hermetic Rust Cargo toolchain driver.
+- `clippy`: Hermetic Rust static analysis and linting.
 - `gazelle`: Automated generation of Bazel BUILD files for Go and Python.
 - `go`: Hermetic Go toolchain driver.
 - `goimports`: Automated Go import formatting.
 - `pyrefly`: Static type checker for Python.
 - `ruff`: High-performance Python linter and formatter.
+- `rustfmt`: Automated Rust source formatting.
 - `staticcheck`: Static analysis for Go.
 - `update_ide_paths`: Generates `pyrefly.toml` and `pyrightconfig.json` with external Bazel dependency paths.
 - `update_manifest`: Regenerates `gazelle_python.yaml` package mapping.
