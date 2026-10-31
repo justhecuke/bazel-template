@@ -1,0 +1,60 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+cc_library(
+    name = "calculator",
+    srcs = ["calculator.cc"],
+    hdrs = ["calculator.hh"],
+    copts = [
+        "-fno-exceptions",
+        "-fno-rtti",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "rust_calculator",
+    srcs = ["rust_calculator.cc"],
+    hdrs = ["rust_calculator.hh"],
+    visibility = ["//visibility:public"],
+    deps = ["//rs:rust_calculator"],
+)
+
+cc_binary(
+    name = "main",
+    srcs = ["main.cc"],
+    data = ["//rs:rust_calculator"],
+    env = select({
+        "@platforms//os:windows": {
+            "PATH": "rs;.",
+        },
+        "//conditions:default": {},
+    }),
+    visibility = ["//visibility:public"],
+    deps = [
+        ":calculator",
+        ":rust_calculator",
+        "//rs:rust_calculator",
+    ],
+)
+
+cc_test(
+    name = "calculator_test",
+    srcs = ["calculator_test.cc"],
+    deps = [":calculator"],
+)
+
+cc_test(
+    name = "rust_calculator_test",
+    srcs = ["rust_calculator_test.cc"],
+    data = ["//rs:rust_calculator"],
+    env = select({
+        "@platforms//os:windows": {
+            "PATH": "rs;.",
+        },
+        "//conditions:default": {},
+    }),
+    deps = [
+        ":rust_calculator",
+        "//rs:rust_calculator",
+    ],
+)

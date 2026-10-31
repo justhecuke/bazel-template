@@ -13,6 +13,7 @@ bazel_dep(name = "rules_python_gazelle_plugin", version = "0.37.0")
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.1.0")
 bazel_dep(name = "platforms", version = "1.1.0")
 bazel_dep(name = "rules_rust", version = "0.75.0")
+bazel_dep(name = "rules_cc", version = "0.2.17")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
@@ -78,5 +79,8 @@ register_toolchains("@rust_toolchains//:all")
 single_version_override(
     module_name = "rules_rust",
     patch_strip = 1,
-    patches = ["//patches:rules_rust_windows_gnu.patch"],
+    patches = [
+        "//patches:rules_rust_windows_gnu.patch",
+        "//patches:rules_rust_cdylib_windows.patch",
+    ],
 )
