@@ -8,6 +8,7 @@ cc_library(
         "-fno-exceptions",
         "-fno-rtti",
     ],
+    linkstatic = True,
     visibility = ["//visibility:public"],
 )
 
@@ -15,6 +16,7 @@ cc_library(
     name = "rust_calculator",
     srcs = ["rust_calculator.cc"],
     hdrs = ["rust_calculator.hh"],
+    linkstatic = True,
     visibility = ["//visibility:public"],
     deps = ["//rs:rust_calculator"],
 )
@@ -27,8 +29,20 @@ cc_binary(
         "@platforms//os:windows": {
             "PATH": "rs;.",
         },
+        "@platforms//os:linux": {
+            "LD_LIBRARY_PATH": "rs:.",
+        },
         "//conditions:default": {},
     }),
+    linkopts = select({
+        "@platforms//os:linux": [
+            "-Wl,-rpath,$$ORIGIN/../rs",
+            "-Wl,-rpath,$$ORIGIN/rs",
+            "-Wl,-rpath,$$ORIGIN",
+        ],
+        "//conditions:default": [],
+    }),
+    linkstatic = True,
     visibility = ["//visibility:public"],
     deps = [
         ":calculator",
@@ -40,6 +54,7 @@ cc_binary(
 cc_test(
     name = "calculator_test",
     srcs = ["calculator_test.cc"],
+    linkstatic = True,
     deps = [":calculator"],
 )
 
@@ -51,8 +66,20 @@ cc_test(
         "@platforms//os:windows": {
             "PATH": "rs;.",
         },
+        "@platforms//os:linux": {
+            "LD_LIBRARY_PATH": "rs:.",
+        },
         "//conditions:default": {},
     }),
+    linkopts = select({
+        "@platforms//os:linux": [
+            "-Wl,-rpath,$$ORIGIN/../rs",
+            "-Wl,-rpath,$$ORIGIN/rs",
+            "-Wl,-rpath,$$ORIGIN",
+        ],
+        "//conditions:default": [],
+    }),
+    linkstatic = True,
     deps = [
         ":rust_calculator",
         "//rs:rust_calculator",
