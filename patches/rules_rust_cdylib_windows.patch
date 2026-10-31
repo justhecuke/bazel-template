@@ -1,10 +1,24 @@
 diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
 --- a/rust/private/rustc.bzl
 +++ b/rust/private/rustc.bzl
-@@ -1478,6 +1478,24 @@
-         if crate_info.type == "dylib" and toolchain.target_os in ["macos", "darwin"]:
+@@ -1476,8 +1476,35 @@
+-        # On macOS, set the dylib install name to @rpath/<basename> so that
+-        # consumers find it via RPATH rather than the exec-root build path.
+-        if crate_info.type == "dylib" and toolchain.target_os in ["macos", "darwin"]:
++        # On macOS, set the dylib/cdylib install name to @rpath/<basename> so that
++        # consumers find it via RPATH rather than the exec-root build path.
++        if crate_info.type in ("cdylib", "dylib") and toolchain.target_os in ["macos", "darwin"]:
              rustc_flags.add("--codegen=link-arg=-Wl,-install_name,@rpath/" + crate_info.output.basename)
  
++        # On ELF platforms, set the DT_SONAME so that downstream linkers
++        # record the soname rather than the exec-root solib path.
++        if (
++            crate_info.type in ("cdylib", "dylib") and
++            toolchain.target_os in ["linux", "android", "freebsd", "openbsd", "netbsd"]
++        ):
++            prefix = "" if ld_is_direct_driver else "-Wl,"
++            rustc_flags.add("--codegen=link-arg=%s-soname=%s" % (prefix, crate_info.output.basename))
++
 +        # On Windows GNU targets, the C runtime startup object (dllcrt2.o) provides
 +        # the DLL entry point (DllMainCRTStartup on 64-bit x86_64/aarch64, or
 +        # _DllMainCRTStartup@12 with stdcall name decoration on 32-bit x86), which
@@ -26,7 +40,7 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
      use_metadata = _depend_on_metadata(crate_info, force_depend_on_objects)
  
      # These always need to be added, even if not linking this crate.
-@@ -2010,9 +2028,14 @@
+@@ -2010,9 +2037,14 @@
      # interface library that rustc generates in the output files.
      interface_library = None
      if toolchain.target_os == "windows" and crate_info.type == "cdylib":
@@ -44,7 +58,7 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
          outputs.append(interface_library)
  
      # The action might generate extra output that we don't want to include in the `DefaultInfo` files.
-@@ -2572,8 +2595,12 @@
+@@ -2572,8 +2604,12 @@
              linking_context = linking_context,
              debug_context = debug_context,
          ),
@@ -58,7 +72,7 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
  
      # Flattening is okay since crate_info.deps only records direct deps.
      for dep in crate_info.deps.to_list():
-@@ -3019,6 +3046,7 @@
+@@ -3019,6 +3055,7 @@
      linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
      ret = []
      prefix = "" if use_direct_driver else "-Wl,"
@@ -66,7 +80,7 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
      for lib in linker_input.libraries:
          if lib.alwayslink:
              ret.extend([
-@@ -3027,7 +3055,19 @@
+@@ -3027,7 +3064,19 @@
                  ("-Clink-arg=%s--no-whole-archive" % prefix),
              ])
          elif include_link_flags:
