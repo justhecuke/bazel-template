@@ -58,6 +58,35 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
  
      # Flattening is okay since crate_info.deps only records direct deps.
      for dep in crate_info.deps.to_list():
+@@ -3019,6 +3046,7 @@
+     linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
+     ret = []
+     prefix = "" if use_direct_driver else "-Wl,"
++    has_static_trailing_libs = False
+     for lib in linker_input.libraries:
+         if lib.alwayslink:
+             ret.extend([
+@@ -3027,7 +3055,19 @@
+                 ("-Clink-arg=%s--no-whole-archive" % prefix),
+             ])
+         elif include_link_flags:
+-            ret.extend(portable_link_flags(lib, use_pic, ambiguous_libs, get_lib_name_default))
++            flags = portable_link_flags(lib, use_pic, ambiguous_libs, get_lib_name_default)
++            if (lib.static_library or lib.pic_static_library) and not _is_dylib(lib):
++                # On Linux/ELF platforms, rustc emits `-Wl,-Bdynamic` before trailing link-args.
++                # When linking against static libraries in Section C, switch the linker to static
++                # mode so that `-l<name>` searches for `lib<name>.a` rather than requiring `lib<name>.so`.
++                ret.extend([f for f in flags if not f.startswith("-Clink-arg=")])
++                ret.append("-Clink-arg=%s-Bstatic" % prefix)
++                ret.extend([f for f in flags if f.startswith("-Clink-arg=")])
++                has_static_trailing_libs = True
++            else:
++                ret.extend(flags)
++    if has_static_trailing_libs:
++        ret.append("-Clink-arg=%s-Bdynamic" % prefix)
+     _add_user_link_flags(ret, linker_input)
+     return ret
+ 
 diff --git a/test/unit/cc_info/cc_info_test.bzl b/test/unit/cc_info/cc_info_test.bzl
 --- a/test/unit/cc_info/cc_info_test.bzl
 +++ b/test/unit/cc_info/cc_info_test.bzl
