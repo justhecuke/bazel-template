@@ -1,1 +1,4 @@
-exports_files(["rules_rust_windows_gnu.patch"])
+exports_files([
+    "rules_rust_cdylib_windows.patch",
+    "rules_rust_windows_gnu.patch",
+])

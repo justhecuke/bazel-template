@@ -1,0 +1,89 @@
+diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
+--- a/rust/private/rustc.bzl
++++ b/rust/private/rustc.bzl
+@@ -1478,6 +1478,24 @@
+         if crate_info.type == "dylib" and toolchain.target_os in ["macos", "darwin"]:
+             rustc_flags.add("--codegen=link-arg=-Wl,-install_name,@rpath/" + crate_info.output.basename)
+ 
++        # On Windows GNU targets, the C runtime startup object (dllcrt2.o) provides
++        # the DLL entry point (DllMainCRTStartup on 64-bit x86_64/aarch64, or
++        # _DllMainCRTStartup@12 with stdcall name decoration on 32-bit x86), which
++        # gcc/clang drivers pass via `-e`. When invoking a direct linker driver such
++        # as `rust-lld` without gcc/clang, `ld.lld -flavor gnu` defaults to looking
++        # for `_DllMainCRTStartup` (without @12 or without matching 64-bit symbols),
++        # causing an undefined symbol error. Pass the entry point explicitly.
++        if (
++            crate_info.type in ("cdylib", "dylib", "proc-macro") and
++            toolchain.target_os == "windows" and
++            toolchain.target_abi != "msvc" and
++            ld_is_direct_driver
++        ):
++            if toolchain.target_arch in ("i686", "i586", "i386"):
++                rustc_flags.add("--codegen=link-arg=--entry=_DllMainCRTStartup@12")
++            else:
++                rustc_flags.add("--codegen=link-arg=--entry=DllMainCRTStartup")
++
+     use_metadata = _depend_on_metadata(crate_info, force_depend_on_objects)
+ 
+     # These always need to be added, even if not linking this crate.
+@@ -2010,9 +2028,14 @@
+     # interface library that rustc generates in the output files.
+     interface_library = None
+     if toolchain.target_os == "windows" and crate_info.type == "cdylib":
+-        # Rustc generates the import library with a `.dll.lib` extension rather than the usual `.lib` one that msvc
+-        # expects (see https://github.com/rust-lang/rust/pull/29520 for more context).
+-        interface_library = ctx.actions.declare_file(crate_info.output.basename + ".lib", sibling = crate_info.output)
++        if toolchain.target_abi == "msvc":
++            # Rustc generates the import library with a `.dll.lib` extension rather than the usual `.lib` one that msvc
++            # expects (see https://github.com/rust-lang/rust/pull/29520 for more context).
++            interface_library_name = crate_info.output.basename + ".lib"
++        else:
++            # On non-MSVC Windows targets (e.g. gnu, gnullvm), rustc generates `lib<name>.dll.a`.
++            interface_library_name = "lib" + crate_info.output.basename + ".a"
++        interface_library = ctx.actions.declare_file(interface_library_name, sibling = crate_info.output)
+         outputs.append(interface_library)
+ 
+     # The action might generate extra output that we don't want to include in the `DefaultInfo` files.
+@@ -2572,8 +2595,12 @@
+             linking_context = linking_context,
+             debug_context = debug_context,
+         ),
+-        toolchain.stdlib_linkflags,
+     ]
++
++    # A cdylib is already linked against the Rust standard library, so its
++    # stdlib link flags do not need to propagate to downstream link actions.
++    if crate_info.type != "cdylib":
++        cc_infos.append(toolchain.stdlib_linkflags)
+ 
+     # Flattening is okay since crate_info.deps only records direct deps.
+     for dep in crate_info.deps.to_list():
+diff --git a/test/unit/cc_info/cc_info_test.bzl b/test/unit/cc_info/cc_info_test.bzl
+--- a/test/unit/cc_info/cc_info_test.bzl
++++ b/test/unit/cc_info/cc_info_test.bzl
+@@ -98,7 +98,7 @@
+ def _cdylib_provides_cc_info_test_impl(ctx):
+     env = analysistest.begin(ctx)
+     tut = analysistest.target_under_test(env)
+-    _assert_cc_info_has_library_to_link(env, tut, "cdylib", 2)
++    _assert_cc_info_has_library_to_link(env, tut, "cdylib", 1)
+     return analysistest.end(env)
+ 
+ def _staticlib_provides_cc_info_test_impl(ctx):
+diff --git a/test/unit/win_interface_library/win_interface_library_analysis_test.bzl b/test/unit/win_interface_library/win_interface_library_analysis_test.bzl
+--- a/test/unit/win_interface_library/win_interface_library_analysis_test.bzl
++++ b/test/unit/win_interface_library/win_interface_library_analysis_test.bzl
+@@ -12,10 +12,11 @@
+     files = target[DefaultInfo].files.to_list()
+     cc_library = target[CcInfo].linking_context.linker_inputs.to_list()[0].libraries[0]
+ 
+-    # Make sure that we have both the `.dll` and the `.dll.lib` file in the default info's files
++    # Make sure that we have both the `.dll` and the import library (`.dll.lib` on MSVC,
++    # `.dll.a` on GNU/LLVM-GNU) in the default info's files.
+     asserts.equals(env, len(files), 2)
+     asserts.true(env, files[0].basename.endswith(".dll"))
+-    asserts.true(env, files[1].basename.endswith(".dll.lib"))
++    asserts.true(env, files[1].basename.endswith((".dll.lib", ".dll.a")))
+ 
+     # Make sure that the cc_library has both a dynamic and interface library
+     asserts.true(env, cc_library.dynamic_library != None)
