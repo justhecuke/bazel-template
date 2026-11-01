@@ -25,7 +25,7 @@ index 73cf613..9fee7da 100644
          zigtarget = target_config.zigtarget
  
 diff --git a/toolchain/zig_cc_toolchain.bzl b/toolchain/zig_cc_toolchain.bzl
-index 72fa0c2..4f30389 100644
+index 72fa0c2..ed9b9f8 100644
 --- a/toolchain/zig_cc_toolchain.bzl
 +++ b/toolchain/zig_cc_toolchain.bzl
 @@ -161,12 +161,95 @@ def _zig_cc_toolchain_config_impl(ctx):
@@ -107,7 +107,7 @@ index 72fa0c2..4f30389 100644
 +                            actions = all_link_actions,
 +                            flag_groups = [
 +                                flag_group(
-+                                    flags = ["-Wl,-no-as-needed"],
++                                    flags = ["-Wl,--no-as-needed"],
 +                                ),
 +                            ],
 +                        ),
