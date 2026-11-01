@@ -77,6 +77,14 @@ use_repo(rust, "rust_toolchains")
 register_toolchains("@rust_toolchains//:all")
 
 single_version_override(
+    module_name = "hermetic_cc_toolchain",
+    patch_strip = 1,
+    patches = [
+        "//patches:hermetic_cc_toolchain_darwin.patch",
+    ],
+)
+
+single_version_override(
     module_name = "rules_rust",
     patch_strip = 1,
     patches = [
