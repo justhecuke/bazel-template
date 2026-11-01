@@ -4,8 +4,9 @@ use std::process;
 fn print_usage() {
     println!("Usage: main <command> [arguments]");
     println!("Commands:");
-    println!("  info               Display information about the Rust environment.");
-    println!("  calc <expression>  Evaluate a mathematical expression securely.");
+    println!("  info                   Display information about the Rust environment.");
+    println!("  calc <expression>      Evaluate a mathematical expression using Rust engine.");
+    println!("  calc-cpp <expression>  Evaluate a mathematical expression using C++ FFI engine.");
 }
 
 fn main() {
@@ -19,6 +20,10 @@ fn main() {
         "info" => {
             println!("OS: {}, Arch: {}", env::consts::OS, env::consts::ARCH);
             println!("Bazel hermetic Rust template is working!");
+            println!(
+                "C++ Interop Engine Version: {}",
+                cpp_calculator::version_cpp()
+            );
         }
         "calc" => {
             if args.len() < 3 {
@@ -28,6 +33,20 @@ fn main() {
             let expression = &args[2];
             match calculator::evaluate_expression(expression) {
                 Ok(result) => println!("{expression} = {result}"),
+                Err(err) => {
+                    eprintln!("Error: {err}");
+                    process::exit(1);
+                }
+            }
+        }
+        "calc-cpp" => {
+            if args.len() < 3 {
+                eprintln!("Error: calc-cpp command requires a mathematical expression.");
+                process::exit(1);
+            }
+            let expression = &args[2];
+            match cpp_calculator::evaluate_expression_cpp(expression) {
+                Ok(result) => println!("{expression} = {result} (via C++ engine)"),
                 Err(err) => {
                     eprintln!("Error: {err}");
                     process::exit(1);

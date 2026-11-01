@@ -76,6 +76,21 @@ To run the Rust calculator example:
 bazel run //rs:main -- calc "2 + 3 * 4"
 ```
 
+To run the C++ calculator example:
+```shell
+bazel run //cc:main -- calc "2 + 3 * 4"
+```
+
+To run the Rust calling C++ FFI interop example:
+```shell
+bazel run //rs:main -- calc-cpp "2 * (3 + 4) ^ 2"
+```
+
+To run the C++ calling Rust FFI interop example:
+```shell
+bazel run //cc:main -- calc-rs "2 * (3 + 4) ^ 2"
+```
+
 To format Bazel files:
 ```shell
 buildifier BUILD.bazel
