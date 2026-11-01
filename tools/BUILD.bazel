@@ -36,7 +36,10 @@ alias(
 py_binary(
     name = "staticcheck",
     srcs = ["staticcheck.py"],
-    data = ["@co_honnef_go_tools//cmd/staticcheck"],
+    data = [
+        "@co_honnef_go_tools//cmd/staticcheck",
+        "@rules_go//go",
+    ],
     main = "staticcheck.py",
     visibility = ["//visibility:public"],
 )

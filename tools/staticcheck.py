@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Launcher for staticcheck that restores the workspace working directory."""
+"""Launcher for staticcheck that restores the workspace working directory and provisions hermetic Go."""
 
 from __future__ import annotations
 
 import os
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve()
 
 
-def _find_binary_from_manifest(exe_name: str) -> Path | None:
+def _find_file_from_manifest(predicate: Callable[[str], bool]) -> Path | None:
     manifest_file = os.environ.get("RUNFILES_MANIFEST_FILE")
     if manifest_file:
         manifest_path = Path(manifest_file)
@@ -19,7 +20,7 @@ def _find_binary_from_manifest(exe_name: str) -> Path | None:
             with manifest_path.open(encoding="utf-8") as f:
                 for line in f:
                     match line.strip().split(" ", 1):
-                        case [rpath, target] if rpath.endswith(f"/{exe_name}"):
+                        case [rpath, target] if predicate(rpath):
                             candidate = Path(target)
                             if candidate.is_file():
                                 return candidate
@@ -39,33 +40,41 @@ def _find_runfiles_dir() -> Path | None:
     return None
 
 
-def _find_binary(exe_name: str) -> Path | None:
-    from_manifest = _find_binary_from_manifest(exe_name)
+def _find_binary(rel_suffix: str, exe_name: str) -> Path | None:
+    from_manifest = _find_file_from_manifest(lambda rpath: rpath.endswith(f"{rel_suffix}/{exe_name}"))
     if from_manifest:
         return from_manifest
 
-    search_dirs: list[Path] = []
     runfiles_dir = _find_runfiles_dir()
     if runfiles_dir:
-        search_dirs.append(runfiles_dir)
-    search_dirs.extend([SCRIPT_PATH.parent.parent, SCRIPT_PATH.parent.parent.parent])
+        for repo_dir in runfiles_dir.iterdir():
+            if not repo_dir.is_dir():
+                continue
+            candidate = repo_dir / rel_suffix / exe_name
+            if candidate.is_file():
+                return candidate
 
-    for base in search_dirs:
-        if not base.is_dir():
-            continue
-        for root, _dirs, files in os.walk(base):
-            if exe_name in files and "staticcheck_" in root:
-                return Path(root) / exe_name
     return None
 
 
 def main() -> None:
     exe_name = "staticcheck.exe" if sys.platform == "win32" else "staticcheck"
-    found_bin = _find_binary(exe_name)
+    go_exe = "go.exe" if sys.platform == "win32" else "go"
+
+    found_bin = _find_binary("cmd/staticcheck/staticcheck_", exe_name)
+    if not found_bin:
+        found_bin = _find_binary("cmd/staticcheck", exe_name)
 
     if not found_bin:
         sys.stderr.write("Error: Could not locate staticcheck binary in runfiles.\n")
         sys.exit(1)
+
+    hermetic_go = _find_binary("go/tools/go_bin_runner/bin", go_exe)
+    if not hermetic_go:
+        hermetic_go = _find_binary("bin", go_exe)
+
+    if hermetic_go:
+        os.environ["PATH"] = str(hermetic_go.parent.resolve()) + os.pathsep + os.environ.get("PATH", "")
 
     workspace_dir = os.environ.get("BUILD_WORKING_DIRECTORY") or os.environ.get("BUILD_WORKSPACE_DIRECTORY")
     if workspace_dir:
