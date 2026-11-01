@@ -30,6 +30,10 @@ build:windows --@rules_python//python/config_settings:bootstrap_impl=script
 # hermetic x86_64-pc-windows-gnu toolchain instead of the C++ toolchain wrapper.
 build:windows --@rules_rust//rust/settings:toolchain_linker_preference=rust
 
+# On macOS, let rustc invoke its own linker driver instead of hermetic_cc_toolchain
+# (which uses zig c++ and does not support Apple ld64 flags like -oso_prefix).
+build:macos --@rules_rust//rust/settings:toolchain_linker_preference=rust
+
 # Linting settings
 # To run linting: bazel build --config=lint //...
 build:lint --aspects=//tools:lint.bzl%ruff,@rules_rust//rust:defs.bzl%rust_clippy_aspect,@rules_rust//rust:defs.bzl%rustfmt_aspect
