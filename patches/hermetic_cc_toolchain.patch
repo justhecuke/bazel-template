@@ -25,10 +25,10 @@ index 73cf613..9fee7da 100644
          zigtarget = target_config.zigtarget
  
 diff --git a/toolchain/zig_cc_toolchain.bzl b/toolchain/zig_cc_toolchain.bzl
-index 72fa0c2..b010b08 100644
+index 72fa0c2..4f30389 100644
 --- a/toolchain/zig_cc_toolchain.bzl
 +++ b/toolchain/zig_cc_toolchain.bzl
-@@ -161,12 +161,79 @@ def _zig_cc_toolchain_config_impl(ctx):
+@@ -161,12 +161,95 @@ def _zig_cc_toolchain_config_impl(ctx):
          ],
      )
  
@@ -92,6 +92,22 @@ index 72fa0c2..b010b08 100644
 +                                flag_group(
 +                                    expand_if_available = "runtime_solib_name",
 +                                    flags = ["-Wl,-soname,%{runtime_solib_name}"],
++                                ),
++                            ],
++                        ),
++                    ],
++                ),
++            )
++            dynamic_linking_features.append(
++                feature(
++                    name = "no_as_needed",
++                    enabled = True,
++                    flag_sets = [
++                        flag_set(
++                            actions = all_link_actions,
++                            flag_groups = [
++                                flag_group(
++                                    flags = ["-Wl,-no-as-needed"],
 +                                ),
 +                            ],
 +                        ),
