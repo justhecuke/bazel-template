@@ -1,0 +1,85 @@
+diff --git a/toolchain/zig_cc_toolchain.bzl b/toolchain/zig_cc_toolchain.bzl
+index 72fa0c2..b010b08 100644
+--- a/toolchain/zig_cc_toolchain.bzl
++++ b/toolchain/zig_cc_toolchain.bzl
+@@ -161,12 +161,79 @@ def _zig_cc_toolchain_config_impl(ctx):
+         ],
+     )
+ 
++    dynamic_linking_features = []
++    if ctx.attr.supports_dynamic_linker:
++        is_macos = "macos" in ctx.attr.target
++        rpath_prefix = "@loader_path" if is_macos else "$ORIGIN"
++        dynamic_linking_features.append(
++            feature(
++                name = "runtime_library_search_directories",
++                flag_sets = [
++                    flag_set(
++                        actions = all_link_actions,
++                        flag_groups = [
++                            flag_group(
++                                iterate_over = "runtime_library_search_directories",
++                                flag_groups = [
++                                    flag_group(
++                                        flags = [
++                                            "-Xlinker",
++                                            "-rpath",
++                                            "-Xlinker",
++                                            rpath_prefix + "/%{runtime_library_search_directories}",
++                                        ],
++                                    ),
++                                ],
++                                expand_if_available = "runtime_library_search_directories",
++                            ),
++                        ],
++                    ),
++                ],
++            ),
++        )
++        if is_macos:
++            dynamic_linking_features.append(
++                feature(
++                    name = "set_install_name",
++                    enabled = True,
++                    flag_sets = [
++                        flag_set(
++                            actions = dynamic_library_link_actions,
++                            flag_groups = [
++                                flag_group(
++                                    expand_if_available = "runtime_solib_name",
++                                    flags = ["-Wl,-install_name,@rpath/%{runtime_solib_name}"],
++                                ),
++                            ],
++                        ),
++                    ],
++                ),
++            )
++        else:
++            dynamic_linking_features.append(
++                feature(
++                    name = "soname",
++                    enabled = True,
++                    flag_sets = [
++                        flag_set(
++                            actions = dynamic_library_link_actions,
++                            flag_groups = [
++                                flag_group(
++                                    expand_if_available = "runtime_solib_name",
++                                    flags = ["-Wl,-soname,%{runtime_solib_name}"],
++                                ),
++                            ],
++                        ),
++                    ],
++                ),
++            )
++
+     features = [
+         compile_and_link_flags,
+         default_linker_flags,
+         supports_dynamic_linker,
+         strip_debug_symbols_feature,
+-    ] + _compilation_mode_features(ctx)
++    ] + dynamic_linking_features + _compilation_mode_features(ctx)
+ 
+     artifact_name_patterns = [
+         artifact_name_pattern(**json.decode(p))

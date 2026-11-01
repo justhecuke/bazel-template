@@ -80,7 +80,7 @@ single_version_override(
     module_name = "hermetic_cc_toolchain",
     patch_strip = 1,
     patches = [
-        "//patches:hermetic_cc_toolchain_darwin.patch",
+        "//patches:hermetic_cc_toolchain_dynamic_linking.patch",
     ],
 )
 

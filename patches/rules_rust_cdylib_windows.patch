@@ -1,20 +1,23 @@
 diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
+index 72d776f..344b4e1 100644
 --- a/rust/private/rustc.bzl
 +++ b/rust/private/rustc.bzl
-@@ -1476,8 +1476,40 @@
+@@ -1473,10 +1473,41 @@ def construct_arguments(
+             include_link_flags = include_link_flags,
+         )
+ 
 -        # On macOS, set the dylib install name to @rpath/<basename> so that
--        # consumers find it via RPATH rather than the exec-root build path.
++        # On macOS, set the dylib/cdylib install name to @rpath/<basename> so that
+         # consumers find it via RPATH rather than the exec-root build path.
 -        if crate_info.type == "dylib" and toolchain.target_os in ["macos", "darwin"]:
 -            rustc_flags.add("--codegen=link-arg=-Wl,-install_name,@rpath/" + crate_info.output.basename)
-+        # On macOS, set the dylib/cdylib install name to @rpath/<basename> so that
-+        # consumers find it via RPATH rather than the exec-root build path.
 +        if crate_info.type in ("cdylib", "dylib") and toolchain.target_os in ["macos", "darwin"]:
 +            if ld_is_direct_driver:
 +                rustc_flags.add("--codegen=link-arg=-install_name")
 +                rustc_flags.add("--codegen=link-arg=@rpath/" + crate_info.output.basename)
 +            else:
 +                rustc_flags.add("--codegen=link-arg=-Wl,-install_name,@rpath/" + crate_info.output.basename)
- 
++
 +        # On ELF platforms, set the DT_SONAME so that downstream linkers
 +        # record the soname rather than the exec-root solib path.
 +        if (
@@ -41,11 +44,10 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
 +                rustc_flags.add("--codegen=link-arg=--entry=_DllMainCRTStartup@12")
 +            else:
 +                rustc_flags.add("--codegen=link-arg=--entry=DllMainCRTStartup")
-+
+ 
      use_metadata = _depend_on_metadata(crate_info, force_depend_on_objects)
  
-     # These always need to be added, even if not linking this crate.
-@@ -2010,9 +2037,14 @@
+@@ -2010,9 +2041,14 @@ def rustc_compile_action(
      # interface library that rustc generates in the output files.
      interface_library = None
      if toolchain.target_os == "windows" and crate_info.type == "cdylib":
@@ -63,21 +65,39 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
          outputs.append(interface_library)
  
      # The action might generate extra output that we don't want to include in the `DefaultInfo` files.
-@@ -2572,8 +2604,12 @@
+@@ -2206,7 +2242,7 @@ def rustc_compile_action(
+         files = getattr(ctx.files, "data", []) +
+                 ([] if experimental_use_coverage_metadata_files else coverage_runfiles) +
+                 # Include any generated Rust ABI dylibs as required runfiles.
+-                ([crate_info.output] if crate_info.type == "dylib" else []) +
++                ([crate_info.output] if crate_info.type in ("dylib", "cdylib") else []) +
+                 # Include the stdlib dylib when dynamically linking the standard library.
+                 ([toolchain.rust_std_dylib] if link_std_dylib and toolchain.rust_std_dylib else []),
+     )
+@@ -2572,9 +2608,13 @@ def establish_cc_info(ctx, attr, crate_info, toolchain, cc_toolchain, feature_co
              linking_context = linking_context,
              debug_context = debug_context,
          ),
 -        toolchain.stdlib_linkflags,
      ]
-+
+ 
 +    # A cdylib is already linked against the Rust standard library, so its
 +    # stdlib link flags do not need to propagate to downstream link actions.
 +    if crate_info.type != "cdylib":
 +        cc_infos.append(toolchain.stdlib_linkflags)
- 
++
      # Flattening is okay since crate_info.deps only records direct deps.
      for dep in crate_info.deps.to_list():
-@@ -3019,6 +3055,7 @@
+         if dep.cc_info:
+@@ -2972,6 +3012,7 @@ def _make_link_flags_windows(make_link_flags_args, flavor_msvc, use_direct_drive
+     linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
+     ret = []
+     prefix = "" if use_direct_driver else "-Wl,"
++    has_static_trailing_libs = False
+     for lib in linker_input.libraries:
+         if lib.alwayslink:
+             if flavor_msvc:
+@@ -3004,6 +3045,7 @@ def _make_link_flags_darwin(make_link_flags_args, use_direct_driver):
      linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
      ret = []
      prefix = "" if use_direct_driver else "-Wl,"
@@ -85,7 +105,15 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
      for lib in linker_input.libraries:
          if lib.alwayslink:
              ret.extend([
-@@ -3027,7 +3064,19 @@
+@@ -3019,6 +3061,7 @@ def _make_link_flags_default(make_link_flags_args, use_direct_driver):
+     linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
+     ret = []
+     prefix = "" if use_direct_driver else "-Wl,"
++    has_static_trailing_libs = False
+     for lib in linker_input.libraries:
+         if lib.alwayslink:
+             ret.extend([
+@@ -3027,7 +3070,19 @@ def _make_link_flags_default(make_link_flags_args, use_direct_driver):
                  ("-Clink-arg=%s--no-whole-archive" % prefix),
              ])
          elif include_link_flags:
@@ -107,9 +135,10 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
      return ret
  
 diff --git a/test/unit/cc_info/cc_info_test.bzl b/test/unit/cc_info/cc_info_test.bzl
+index 3530a48..aebedbf 100644
 --- a/test/unit/cc_info/cc_info_test.bzl
 +++ b/test/unit/cc_info/cc_info_test.bzl
-@@ -98,7 +98,7 @@
+@@ -98,7 +98,7 @@ def _proc_macro_does_not_provide_cc_info_test_impl(ctx):
  def _cdylib_provides_cc_info_test_impl(ctx):
      env = analysistest.begin(ctx)
      tut = analysistest.target_under_test(env)
@@ -119,9 +148,10 @@ diff --git a/test/unit/cc_info/cc_info_test.bzl b/test/unit/cc_info/cc_info_test
  
  def _staticlib_provides_cc_info_test_impl(ctx):
 diff --git a/test/unit/win_interface_library/win_interface_library_analysis_test.bzl b/test/unit/win_interface_library/win_interface_library_analysis_test.bzl
+index 016d4d2..aaff9df 100644
 --- a/test/unit/win_interface_library/win_interface_library_analysis_test.bzl
 +++ b/test/unit/win_interface_library/win_interface_library_analysis_test.bzl
-@@ -12,10 +12,11 @@
+@@ -12,10 +12,11 @@ def _win_interface_library_test_impl(ctx):
      files = target[DefaultInfo].files.to_list()
      cc_library = target[CcInfo].linking_context.linker_inputs.to_list()[0].libraries[0]
  
