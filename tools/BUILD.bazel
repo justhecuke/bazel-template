@@ -33,9 +33,11 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-alias(
+py_binary(
     name = "staticcheck",
-    actual = "@co_honnef_go_tools//cmd/staticcheck:staticcheck",
+    srcs = ["staticcheck.py"],
+    data = ["@co_honnef_go_tools//cmd/staticcheck"],
+    main = "staticcheck.py",
     visibility = ["//visibility:public"],
 )
 
