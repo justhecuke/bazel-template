@@ -32,6 +32,9 @@ cc_binary(
         "@platforms//os:linux": {
             "LD_LIBRARY_PATH": "rs:.",
         },
+        "@platforms//os:macos": {
+            "DYLD_LIBRARY_PATH": "rs:.",
+        },
         "//conditions:default": {},
     }),
     linkopts = select({
@@ -39,6 +42,11 @@ cc_binary(
             "-Wl,-rpath,$$ORIGIN/../rs",
             "-Wl,-rpath,$$ORIGIN/rs",
             "-Wl,-rpath,$$ORIGIN",
+        ],
+        "@platforms//os:macos": [
+            "-Wl,-rpath,@loader_path/../rs",
+            "-Wl,-rpath,@loader_path/rs",
+            "-Wl,-rpath,@loader_path",
         ],
         "//conditions:default": [],
     }),
@@ -69,6 +77,9 @@ cc_test(
         "@platforms//os:linux": {
             "LD_LIBRARY_PATH": "rs:.",
         },
+        "@platforms//os:macos": {
+            "DYLD_LIBRARY_PATH": "rs:.",
+        },
         "//conditions:default": {},
     }),
     linkopts = select({
@@ -76,6 +87,11 @@ cc_test(
             "-Wl,-rpath,$$ORIGIN/../rs",
             "-Wl,-rpath,$$ORIGIN/rs",
             "-Wl,-rpath,$$ORIGIN",
+        ],
+        "@platforms//os:macos": [
+            "-Wl,-rpath,@loader_path/../rs",
+            "-Wl,-rpath,@loader_path/rs",
+            "-Wl,-rpath,@loader_path",
         ],
         "//conditions:default": [],
     }),
