@@ -1,14 +1,19 @@
 diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
 --- a/rust/private/rustc.bzl
 +++ b/rust/private/rustc.bzl
-@@ -1476,8 +1476,35 @@
+@@ -1476,8 +1476,40 @@
 -        # On macOS, set the dylib install name to @rpath/<basename> so that
 -        # consumers find it via RPATH rather than the exec-root build path.
 -        if crate_info.type == "dylib" and toolchain.target_os in ["macos", "darwin"]:
+-            rustc_flags.add("--codegen=link-arg=-Wl,-install_name,@rpath/" + crate_info.output.basename)
 +        # On macOS, set the dylib/cdylib install name to @rpath/<basename> so that
 +        # consumers find it via RPATH rather than the exec-root build path.
 +        if crate_info.type in ("cdylib", "dylib") and toolchain.target_os in ["macos", "darwin"]:
-             rustc_flags.add("--codegen=link-arg=-Wl,-install_name,@rpath/" + crate_info.output.basename)
++            if ld_is_direct_driver:
++                rustc_flags.add("--codegen=link-arg=-install_name")
++                rustc_flags.add("--codegen=link-arg=@rpath/" + crate_info.output.basename)
++            else:
++                rustc_flags.add("--codegen=link-arg=-Wl,-install_name,@rpath/" + crate_info.output.basename)
  
 +        # On ELF platforms, set the DT_SONAME so that downstream linkers
 +        # record the soname rather than the exec-root solib path.
