@@ -1,5 +1,5 @@
 diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
-index 72d776f..344b4e1 100644
+index 72d776f..0dc0323 100644
 --- a/rust/private/rustc.bzl
 +++ b/rust/private/rustc.bzl
 @@ -1473,10 +1473,41 @@ def construct_arguments(
@@ -74,7 +74,15 @@ index 72d776f..344b4e1 100644
                  # Include the stdlib dylib when dynamically linking the standard library.
                  ([toolchain.rust_std_dylib] if link_std_dylib and toolchain.rust_std_dylib else []),
      )
-@@ -2572,9 +2608,13 @@ def establish_cc_info(ctx, attr, crate_info, toolchain, cc_toolchain, feature_co
+@@ -2544,6 +2580,7 @@ def establish_cc_info(ctx, attr, crate_info, toolchain, cc_toolchain, feature_co
+                 feature_configuration = feature_configuration,
+                 cc_toolchain = cc_toolchain,
+                 dynamic_library = crate_info.output,
++                dynamic_library_symlink_path = crate_info.output.basename,
+                 interface_library = interface_library,
+             )
+     elif crate_info.type == "dylib":
+@@ -2572,9 +2609,13 @@ def establish_cc_info(ctx, attr, crate_info, toolchain, cc_toolchain, feature_co
              linking_context = linking_context,
              debug_context = debug_context,
          ),
@@ -89,7 +97,7 @@ index 72d776f..344b4e1 100644
      # Flattening is okay since crate_info.deps only records direct deps.
      for dep in crate_info.deps.to_list():
          if dep.cc_info:
-@@ -2972,6 +3012,7 @@ def _make_link_flags_windows(make_link_flags_args, flavor_msvc, use_direct_drive
+@@ -2972,6 +3013,7 @@ def _make_link_flags_windows(make_link_flags_args, flavor_msvc, use_direct_drive
      linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
      ret = []
      prefix = "" if use_direct_driver else "-Wl,"
@@ -97,7 +105,7 @@ index 72d776f..344b4e1 100644
      for lib in linker_input.libraries:
          if lib.alwayslink:
              if flavor_msvc:
-@@ -3004,6 +3045,7 @@ def _make_link_flags_darwin(make_link_flags_args, use_direct_driver):
+@@ -3004,6 +3046,7 @@ def _make_link_flags_darwin(make_link_flags_args, use_direct_driver):
      linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
      ret = []
      prefix = "" if use_direct_driver else "-Wl,"
@@ -105,7 +113,7 @@ index 72d776f..344b4e1 100644
      for lib in linker_input.libraries:
          if lib.alwayslink:
              ret.extend([
-@@ -3019,6 +3061,7 @@ def _make_link_flags_default(make_link_flags_args, use_direct_driver):
+@@ -3019,6 +3062,7 @@ def _make_link_flags_default(make_link_flags_args, use_direct_driver):
      linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
      ret = []
      prefix = "" if use_direct_driver else "-Wl,"
@@ -113,7 +121,7 @@ index 72d776f..344b4e1 100644
      for lib in linker_input.libraries:
          if lib.alwayslink:
              ret.extend([
-@@ -3027,7 +3070,19 @@ def _make_link_flags_default(make_link_flags_args, use_direct_driver):
+@@ -3027,7 +3071,19 @@ def _make_link_flags_default(make_link_flags_args, use_direct_driver):
                  ("-Clink-arg=%s--no-whole-archive" % prefix),
              ])
          elif include_link_flags:

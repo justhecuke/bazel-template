@@ -1,3 +1,29 @@
+diff --git a/toolchain/toolchain/defs.bzl b/toolchain/toolchain/defs.bzl
+index 73cf613..9fee7da 100644
+--- a/toolchain/toolchain/defs.bzl
++++ b/toolchain/toolchain/defs.bzl
+@@ -2,6 +2,10 @@ load("@hermetic_cc_toolchain//toolchain/private:defs.bzl", "target_structs")
+ 
+ def declare_toolchains(configs = "", extra_target_settings = []):
+     for target_config in target_structs():
++        # On macOS, bypass Zig CC toolchains and use Apple's native toolchain
++        # to support Apple-specific linker flags (-x, -oso_prefix) from Go and Rust.
++        if target_config.libc == "darwin":
++            continue
+         gotarget = target_config.gotarget
+         zigtarget = target_config.zigtarget
+ 
+@@ -18,6 +22,10 @@ def declare_toolchains(configs = "", extra_target_settings = []):
+ 
+ def declare_libc_aware_toolchains(configs = "", extra_target_settings = []):
+     for target_config in target_structs():
++        # On macOS, bypass Zig CC toolchains and use Apple's native toolchain
++        # to support Apple-specific linker flags (-x, -oso_prefix) from Go and Rust.
++        if target_config.libc == "darwin":
++            continue
+         gotarget = target_config.gotarget
+         zigtarget = target_config.zigtarget
+ 
 diff --git a/toolchain/zig_cc_toolchain.bzl b/toolchain/zig_cc_toolchain.bzl
 index 72fa0c2..b010b08 100644
 --- a/toolchain/zig_cc_toolchain.bzl
