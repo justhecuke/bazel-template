@@ -7,8 +7,11 @@ This repository uses a completely hermetic Bazel setup. You should **not** insta
 
 To bootstrap this environment, we use `mise` to automatically manage your `PATH`. 
 
+### 0. Prerequisites (Windows)
+Enable **Windows Developer Mode** (*Settings → System → For developers → Developer Mode*), which is required for symlink-based Bazel runfiles and tooling.
+
 ### 1. Provision System Dependencies
-Run the initial setup script to download the required global bootstrappers (`bazelisk` and `mise`). We recommend using the `--add-to-path` flag to update your system PATH, and the `--configure-shell` flag to automatically inject activation into your shell profile.
+Run the initial setup script to download the required global bootstrappers (`bazelisk`, `mise`, and `prek`). We recommend using the `--add-to-path` flag to update your system PATH, and the `--configure-shell` flag to automatically inject activation into your shell profile.
 
 **On Windows (PowerShell):**
 ```powershell
@@ -19,14 +22,14 @@ python setup.py --add-to-path --configure-shell $PROFILE
 ```bash
 python setup.py --configure-shell ~/.bashrc # or ~/.zshrc
 ```
-*Note: On Windows, binaries are installed to `C:\dev\bin` (this can be automatically added to your Windows User `PATH` via the `--add-to-path` flag). On Mac/Linux, they are installed to `~/.local/bin`.*
+*Note: On Windows, binaries are installed to `%LOCALAPPDATA%\justhecuke\bazel-template\bin` (this can be automatically added to your Windows User `PATH` via the `--add-to-path` flag). On Mac/Linux, they are installed to `~/.local/justhecuke/bazel-template/bin`.*
 
 ### 2. Restart Your IDE Completely
 `setup.py` modifies your Windows User `PATH` in the registry. This change **will not be visible** to any terminal that was already open, including "new terminal" tabs inside your IDE — those inherit the IDE process's environment, which was frozen at launch time.
 
 **You must completely close and reopen your IDE** (or open a fresh terminal outside the IDE, e.g. Windows Terminal / PowerShell directly) for the new `PATH` to take effect.
 
-> **Tip:** You can verify the path is correct by running `where.exe mise` in a fresh terminal. It should print `C:\dev\bin\mise.exe`. If it prints a path containing spaces (like `C:\Users\...`), you have a stale terminal and need to restart your IDE.
+> **Tip:** You can verify the path is correct by running `where.exe bazelisk` in a fresh terminal. It should print `%LOCALAPPDATA%\justhecuke\bazel-template\bin\bazelisk.exe`.
 
 ### 3. Trust the Project
 Open a new terminal in the root of the project and trust the `.mise.toml` configuration:

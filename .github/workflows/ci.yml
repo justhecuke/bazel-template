@@ -21,7 +21,7 @@ jobs:
       - name: Add wrappers and tools to PATH
         run: |
           echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/justhecuke/bazel-template/bin" >> $GITHUB_PATH
 
       - name: Set up Bazel
         uses: bazel-contrib/setup-bazel@0.19.0

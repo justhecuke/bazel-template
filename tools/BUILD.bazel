@@ -6,15 +6,30 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-alias(
-    name = "buildifier",
-    actual = "@buildifier_prebuilt//:buildifier",
+py_binary(
+    name = "ruff_cli",
+    srcs = ["run_in_cwd.py"],
+    args = ["$(rlocationpath @ruff//:ruff)"],
+    data = ["@ruff"],
+    main = "run_in_cwd.py",
     visibility = ["//visibility:public"],
 )
 
-alias(
+py_binary(
+    name = "buildifier",
+    srcs = ["run_in_cwd.py"],
+    args = ["$(rlocationpath @buildifier_prebuilt//:buildifier)"],
+    data = ["@buildifier_prebuilt//:buildifier"],
+    main = "run_in_cwd.py",
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
     name = "buildozer",
-    actual = "@buildifier_prebuilt//:buildozer",
+    srcs = ["run_in_cwd.py"],
+    args = ["$(rlocationpath @buildifier_prebuilt//:buildozer)"],
+    data = ["@buildifier_prebuilt//:buildozer"],
+    main = "run_in_cwd.py",
     visibility = ["//visibility:public"],
 )
 
@@ -27,15 +42,21 @@ py_binary(
     deps = ["@pip//pyrefly"],
 )
 
-alias(
+py_binary(
     name = "goimports",
-    actual = "@org_golang_x_tools//cmd/goimports:goimports",
+    srcs = ["run_in_cwd.py"],
+    args = ["$(rlocationpath @org_golang_x_tools//cmd/goimports:goimports)"],
+    data = ["@org_golang_x_tools//cmd/goimports"],
+    main = "run_in_cwd.py",
     visibility = ["//visibility:public"],
 )
 
-alias(
+py_binary(
     name = "staticcheck",
-    actual = "@co_honnef_go_tools//cmd/staticcheck:staticcheck",
+    srcs = ["run_in_cwd.py"],
+    args = ["$(rlocationpath @co_honnef_go_tools//cmd/staticcheck:staticcheck)"],
+    data = ["@co_honnef_go_tools//cmd/staticcheck"],
+    main = "run_in_cwd.py",
     visibility = ["//visibility:public"],
 )
 

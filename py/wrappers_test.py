@@ -412,33 +412,24 @@ class LauncherExecutionBehaviorTest(unittest.TestCase):
 class WrapperUtilsLogicTest(unittest.TestCase):
     """Unit tests verifying wrapper_utils.py argument handling."""
 
-    def test_path_resolution_after_double_dash(self) -> None:
-        """run_bazel_target logic must resolve file paths after '--' to absolute paths."""
-        extra_args = ["-lint", "fix", "--", "BUILD.bazel", "MODULE.bazel"]
-        resolve_paths = True
+    def test_no_resolve_paths_argument(self) -> None:
+        """run_bazel_target must not rewrite arguments as paths."""
+        wrapper_utils_py = get_bin_dir() / "wrapper_utils.py"
+        content = wrapper_utils_py.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "resolve_paths",
+            content,
+            "wrapper_utils.py must not rewrite arguments via resolve_paths; tools run in BUILD_WORKING_DIRECTORY.",
+        )
 
-        cmd: list[str] = ["python", "bazel.py", "run", "//tools:buildifier", "--"]
-        if extra_args:
-            if resolve_paths and "--" in extra_args:
-                sep_idx = extra_args.index("--")
-                cmd.extend(extra_args[: sep_idx + 1])
-                cmd.extend(str(Path(f).resolve()) for f in extra_args[sep_idx + 1 :])
-            else:
-                cmd.extend(extra_args)
-
-        self.assertEqual(cmd[5], "-lint")
-        self.assertEqual(cmd[6], "fix")
-        self.assertEqual(cmd[7], "--")
-        # Ensure arguments following '--' became absolute paths
-        self.assertTrue(Path(cmd[8]).is_absolute(), f"Expected absolute path: {cmd[8]}")
-        self.assertTrue(Path(cmd[9]).is_absolute(), f"Expected absolute path: {cmd[9]}")
-
-    def test_no_double_dash_leaves_args_untouched(self) -> None:
-        """When '--' is not present in extra_args, arguments must be preserved as-is."""
-        extra_args = ["version"]
+    def test_arguments_forwarded_verbatim(self) -> None:
+        """Arguments including '--' and non-file args (like Go's 'unsafe') must be preserved verbatim."""
+        extra_args = ["list", "-f", "{{.Dir}}", "--", "unsafe"]
         cmd: list[str] = ["python", "bazel.py", "run", "@rules_go//go", "--"]
         cmd.extend(extra_args)
-        self.assertEqual(cmd, ["python", "bazel.py", "run", "@rules_go//go", "--", "version"])
+        self.assertEqual(
+            cmd, ["python", "bazel.py", "run", "@rules_go//go", "--", "list", "-f", "{{.Dir}}", "--", "unsafe"]
+        )
 
 
 if __name__ == "__main__":

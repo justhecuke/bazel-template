@@ -32,8 +32,8 @@ def main() -> None:
         else:
             args.insert(0, f"--config={pyproject_toml.resolve()}")
 
-    # Use the local alias defined in //tools:BUILD.bazel
-    run_bazel_target("//tools:ruff", extra_args=args)
+    # Use the CLI wrapper target defined in //tools:BUILD.bazel
+    run_bazel_target("//tools:ruff_cli", extra_args=args)
 
 
 if __name__ == "__main__":

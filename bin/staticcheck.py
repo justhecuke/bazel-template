@@ -25,7 +25,7 @@ def main() -> None:
     if not args:
         args = ["./..."]
 
-    run_bazel_target("//tools:staticcheck", extra_args=args, resolve_paths=False)
+    run_bazel_target("//tools:staticcheck", extra_args=args)
 
 
 if __name__ == "__main__":
