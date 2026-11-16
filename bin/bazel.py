@@ -21,8 +21,7 @@ def _bootstrap_venv(venv_dir: Path) -> None:
     """Ensure an isolated Python venv exists for Bazel bootstrap."""
     if not venv_dir.is_dir():
         print("Bootstrapping isolated Python venv...")
-        python_exe = "python3" if shutil.which("python3") else "python"
-        subprocess.run([python_exe, "-m", "venv", str(venv_dir)], check=True)
+        subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True)
 
 
 def _setup_windows_bash(env: dict[str, str]) -> None:
@@ -56,11 +55,6 @@ def _get_bazel_cmd(env: dict[str, str]) -> tuple[str, list[str]]:
     if len(sys.argv) > 1 and sys.argv[1] in ["build", "test", "run", "coverage"]:
         if env.get("CI") == "true" and "--config=ci" not in sys.argv:
             cmd.insert(2, "--config=ci")
-
-    # On Windows, enable runfiles by default as many Python-based tools (like Gazelle) depend on them.
-    if sys.platform == "win32" and len(sys.argv) > 1 and sys.argv[1] in ["run", "test", "build"]:
-        if "--enable_runfiles" not in sys.argv:
-            cmd.insert(2, "--enable_runfiles")
 
     return bazel_exe, cmd
 

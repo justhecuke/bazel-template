@@ -20,7 +20,7 @@ from bin.wrapper_utils import run_bazel_target
 
 def main() -> None:
     # Use the local alias defined in //tools:BUILD.bazel
-    run_bazel_target("//tools:goimports", extra_args=sys.argv[1:], resolve_paths=True)
+    run_bazel_target("//tools:goimports", extra_args=sys.argv[1:])
 
 
 if __name__ == "__main__":

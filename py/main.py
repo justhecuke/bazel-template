@@ -2,6 +2,7 @@ import sys
 
 import requests
 from cyclopts import App
+
 from py.calculator import evaluate_expression
 
 app = App()

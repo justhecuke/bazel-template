@@ -42,10 +42,6 @@ PREK_HASHES = {
     "prek-aarch64-unknown-linux-gnu.tar.gz": "0112ffa44a0aaa869aa9da45393b7a4d7c30c24abd6e540bac0494db24844c79",
 }
 
-# On Windows, install to C:\dev\bin — a conventional, space-free developer tools directory.
-# This avoids a known bug in `mise activate pwsh` that breaks when the path contains spaces
-# (common for Windows user profiles like C:\Users\John Doe\...).
-WINDOWS_LOCAL_BIN = r"C:\dev\bin"
 SETUP_START_MARKER = "# <bazel-template-setup-start>"
 SETUP_END_MARKER = "# <bazel-template-setup-end>"
 
@@ -55,8 +51,9 @@ def get_local_bin(os_name: str | None = None) -> Path:
     if os_name is None:
         os_name, _, _ = get_platform_info()
     if os_name == "windows":
-        return Path(WINDOWS_LOCAL_BIN)
-    return Path.home() / ".local" / "bin"
+        local_app_data = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
+        return local_app_data / "justhecuke" / "bazel-template" / "bin"
+    return Path.home() / ".local" / "justhecuke" / "bazel-template" / "bin"
 
 
 def get_platform_info() -> tuple[str, str, str]:
@@ -322,7 +319,8 @@ def configure_shell_profile(profile_path: str, local_bin: str) -> bool:
 
     local_bin_path = Path(local_bin)
     if shell_type == "pwsh":
-        mise_exe = str(local_bin_path / "mise.exe").replace("\\", "\\\\")
+        local_mise = local_bin_path / "mise.exe"
+        mise_exe = str(local_mise) if local_mise.exists() else (shutil.which("mise") or str(local_mise))
         activation_block = (
             f'{SETUP_START_MARKER}\n& "{mise_exe}" activate pwsh | Out-String | Invoke-Expression\n{SETUP_END_MARKER}\n'
         )
@@ -369,7 +367,8 @@ def ensure_windows_path(*paths: Path) -> bool:
         if ($currentPath -eq $null) {{
             $currentPath = ''
         }}
-        if (-not $currentPath.Contains('{path_str}')) {{
+        $entries = $currentPath -split ';' | Where-Object {{ $_ -ne '' }}
+        if ($entries -notcontains '{path_str}') {{
             $newPath = $currentPath
             if ($newPath -and -not $newPath.EndsWith(';')) {{
                 $newPath += ';'
@@ -425,7 +424,7 @@ def main() -> None:
 
     print("\n[ok] Setup complete!")
     if os_name != "windows":
-        print("Ensure ~/.local/bin (and ~/.local/share/mise/bin if using mise) is in your PATH.")
+        print(f"Ensure {local_bin_str} (and ~/.local/share/mise/bin if using mise) is in your PATH.")
 
     needs_restart = path_modified or profile_modified
     if needs_restart:
