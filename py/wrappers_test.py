@@ -217,6 +217,11 @@ class WrapperArchitectureTest(unittest.TestCase):
                     posix_launcher.exists(),
                     f"Missing POSIX launcher for {tool}: expected {posix_launcher}",
                 )
+                if sys.platform != "win32":
+                    self.assertTrue(
+                        os.access(posix_launcher, os.X_OK),
+                        f"POSIX launcher for {tool} must be executable (+x): {posix_launcher}",
+                    )
                 posix_content = posix_launcher.read_text(encoding="utf-8").strip()
                 self.assertTrue(
                     posix_content.startswith("#!/usr/bin/env bash"),
