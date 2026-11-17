@@ -1,5 +1,6 @@
 ---
-description: Finalize a GitHub PR from Local Changes
+name: finalize-pr
+description: Finalize a GitHub PR from local changes by pushing the branch, creating or tracking the PR, and fixing CI failures until all checks pass.
 ---
 
 # Finalize a GitHub PR from Local Changes
